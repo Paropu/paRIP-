@@ -1,3 +1,5 @@
+import java.net.InetAddress;
+
 public class Rip {
 
 	/*
@@ -25,12 +27,38 @@ public class Rip {
 	 */
 
 	public static void main(String[] args) {
-		// Comprobar datos de entrada
+		// Comprobar datos de entrada y asignar direccion y puerto
 		IP ip = new IP(args);
+		InetAddress addr;
 		if (ip.getDireccion().equals("ERROR")) {
 			System.out.println("Argumentos incorrectos");
 			return;
 		}
-		System.out.println(ip.toString());
+		System.out.println(ip); // Muestro direccion IP y puerto
+		try {
+			addr = InetAddress.getByName(ip.getDireccion());
+		} catch (Exception e) {
+
+		}
+		/*
+		 * // Abrir puerto para recibir datagramas
+		 * Integer port = new Integer(ip.getPuerto());
+		 * DatagramSocket socket;
+		 * try {
+		 * socket = new DatagramSocket(port);
+		 * byte[] buffer = new byte[50]; // Tamano maximo del mensaje
+		 * DatagramPacket datagram = new DatagramPacket(buffer, port);
+		 * SocketAddress addr = new SocketAddress() {
+		 * 
+		 * };
+		 * socket.connect();
+		 * socket.receive(datagram);
+		 * String mensaje = new String(buffer);
+		 * System.out.println(mensaje);
+		 * socket.close();
+		 * } catch (Exception e) {
+		 * e.printStackTrace();
+		 * }
+		 */
 	}
 }

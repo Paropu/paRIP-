@@ -65,21 +65,17 @@ public class IP {
 
 	public IP(String[] args) {
 		if (args.length == 0) {
-			System.out.println("1");
 			this.direccion = this.getDireccionETH0(); // Obtiene y asigna la direccion IP del puerto "eth0"
 			this.puerto = "5512";
 		} else {
 			String[] entrada = args[0].split(":");
 			if (entrada.length == 1) {
-				System.out.println("2");
 				this.direccion = entrada[0];
 				this.puerto = "5512";
 			} else if (entrada.length == 2) {
-				System.out.println("3");
 				this.direccion = entrada[0];
 				this.puerto = entrada[1];
 			} else {
-				System.out.println("4");
 				this.direccion = "ERROR";
 			}
 		}
