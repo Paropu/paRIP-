@@ -1,3 +1,5 @@
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
 
 public class Rip {
@@ -40,25 +42,36 @@ public class Rip {
 		} catch (Exception e) {
 		}
 
-		/*
-		 * // Abrir puerto para recibir datagramas
-		 * Integer port = new Integer(ip.getPuerto());
-		 * DatagramSocket socket;
-		 * try {
-		 * socket = new DatagramSocket(port);
-		 * byte[] buffer = new byte[50]; // Tamano maximo del mensaje
-		 * DatagramPacket datagram = new DatagramPacket(buffer, port);
-		 * SocketAddress addr = new SocketAddress() {
-		 * 
-		 * };
-		 * socket.connect();
-		 * socket.receive(datagram);
-		 * String mensaje = new String(buffer);
-		 * System.out.println(mensaje);
-		 * socket.close();
-		 * } catch (Exception e) {
-		 * e.printStackTrace();
-		 * }
-		 */
+		Integer port = new Integer(ip.getPuerto());
+		DatagramSocket socket;
+		byte[] buffer = new byte[50]; // Tamano maximo del mensaje
+		String mensaje = new String(buffer);
+
+		// Enviar datagramas
+		try {
+			socket = new DatagramSocket();
+			DatagramPacket datagram = new DatagramPacket(mensaje.getBytes(), mensaje.length(), addr, port);
+
+			socket.send(datagram);
+			socket.close();
+		} catch (Exception e) {
+
+		}
+
+		// Abrir puerto para recibir datagramas
+
+		try {
+			socket = new DatagramSocket(port, addr); // Asigno el puerto por el que van a entrar los datagramas
+			DatagramPacket datagram = new DatagramPacket(buffer, port);
+			// SocketAddress addr = new SocketAddress() {
+			// };
+			/// socket.connect(addr);
+			socket.receive(datagram);
+			System.out.println(mensaje);
+			socket.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 	}
 }
