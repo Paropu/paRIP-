@@ -31,7 +31,6 @@ public class Rip {
 			System.out.println("Argumentos incorrectos");
 			return;
 		}
-		ip.toString();
-		System.out.println(ip.getDireccion() + " " + ip.getPuerto());
+		System.out.println(ip.toString());
 	}
 }
