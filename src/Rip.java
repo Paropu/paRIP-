@@ -29,17 +29,17 @@ public class Rip {
 	public static void main(String[] args) {
 		// Comprobar datos de entrada y asignar direccion y puerto
 		IP ip = new IP(args);
-		InetAddress addr;
+		InetAddress addr = null;
 		if (ip.getDireccion().equals("ERROR")) {
 			System.out.println("Argumentos incorrectos");
 			return;
 		}
-		System.out.println(ip); // Muestro direccion IP y puerto
+		// System.out.println(ip); // Muestro direccion IP y puerto
 		try {
-			addr = InetAddress.getByName(ip.getDireccion());
+			addr = InetAddress.getByName(ip.getDireccion().substring(1, ip.getDireccion().length()));
 		} catch (Exception e) {
-
 		}
+
 		/*
 		 * // Abrir puerto para recibir datagramas
 		 * Integer port = new Integer(ip.getPuerto());
