@@ -54,12 +54,25 @@ public class IP {
 		this.puerto = puerto;
 	}
 
+	/**
+	 * 
+	 * @return direccion IP en forma Inetaddress
+	 */
+	public InetAddress getInet() {
+		InetAddress addr = null;
+		try {
+			addr = InetAddress.getByName(this.direccion.substring(1, this.direccion.length()));
+		} catch (Exception e) {
+		}
+		return addr;
+	}
+
 	/* CONSTRUCTOR */
 	public IP() {
 	}
 
 	/**
-	 * Este constructor asigna direccion y puerto en función de los datos introducidos por el usuario por parámetro
+	 * Constructor asigna direccion y puerto al arrancar el programa
 	 * @param args String de entrada del main()
 	 */
 
@@ -78,6 +91,23 @@ public class IP {
 			} else {
 				this.direccion = "ERROR";
 			}
+		}
+	}
+
+	/**
+	 * Constructor para las direcciones del archivo .topo
+	 * @param args p.e. "192.168.0.43" ó "192.168.0.43:7878"
+	 */
+	public IP(String args) {
+		String[] entrada = args.split(":");
+		if (entrada.length == 1) {
+			this.direccion = entrada[0];
+			this.puerto = "5512";
+		} else if (entrada.length == 2) {
+			this.direccion = entrada[0];
+			this.puerto = entrada[1];
+		} else {
+			this.direccion = "ERROR";
 		}
 	}
 }
