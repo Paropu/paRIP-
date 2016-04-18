@@ -1,8 +1,8 @@
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.net.DatagramSocket;
-import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.TreeMap;
 
 public class Rip {
 
@@ -32,15 +32,15 @@ public class Rip {
 
 	public static void main(String[] args) {
 		// Comprobar datos de entrada y asignar direccion y puerto
-		IP ip = new IP(args);
+		Router origen = new Router(args);
 
 		// Muestro direccion IP y puerto
-		System.out.println("Direccion IP: " + ip);
+		System.out.println("Direccion IP: " + origen);
 
 		// Leer fichero y guardar vecinos en ArrayList direccionVecinos
 		FileInputStream flujo_entrada = null;
 		try {
-			flujo_entrada = new FileInputStream("ripconf-" + ip.getDireccion().substring(1, ip.getDireccion().length()) + ".topo");
+			flujo_entrada = new FileInputStream("ripconf-" + origen.getDireccion().substring(1, origen.getDireccion().length()) + ".topo");
 		} catch (FileNotFoundException NoExisteFichero) {
 			System.out.println("Fichero inexistente");
 			System.exit(0);
@@ -48,15 +48,22 @@ public class Rip {
 
 		Scanner entrada = new Scanner(flujo_entrada); // Se crea un objeto para escanear la linea del fichero
 		// Cambiar por TreeMap
-		ArrayList<IP> direccionVecinos = new ArrayList<IP>();
-		while (entrada.hasNextLine()) {
-			direccionVecinos.add(new IP(entrada.nextLine()));
+		TreeMap<String, Router> direccionVecinos = new TreeMap<String, Router>();
+		while (entrada.hasNext()) {
+			String lectura = entrada.nextLine();
+			Router vecino = new Router(lectura);
+			String[] redAlcanzable = lectura.split("/");
+			if (redAlcanzable.length == 2) { // Dos casos en fichero entrada
+				direccionVecinos.put(redAlcanzable[0], vecino); // Red alcanzable (Ruta conectada)
+			} else {
+				direccionVecinos.put(vecino.getDireccion(), vecino); // Router adyacente
+			}
 		}
-		System.out.println("Lista de IPs del archivo: " + direccionVecinos);// Ver archivo.topo
 		entrada.close();
+		System.out.println("Lista de IPs del archivo: " + direccionVecinos);
 
 		// Enviar y recibir datagramas
-		Integer port = new Integer(ip.getPuerto());
+		Integer port = new Integer(origen.getPuerto());
 		DatagramSocket socket;
 		byte[] buffer = new byte[50]; // Tamano maximo del mensaje
 		String mensaje = new String(buffer);
