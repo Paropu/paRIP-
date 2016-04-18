@@ -1,7 +1,6 @@
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -34,27 +33,26 @@ public class Rip {
 	public static void main(String[] args) {
 		// Comprobar datos de entrada y asignar direccion y puerto
 		IP ip = new IP(args);
-		InetAddress addr = null;
-		if (ip.getDireccion().equals("ERROR")) {
-			System.out.println("Argumentos incorrectos");
-			return;
-		}
+
 		// Muestro direccion IP y puerto
-		// System.out.println(ip);
+		System.out.println("Direccion IP: " + ip);
 
 		// Leer fichero y guardar vecinos en ArrayList direccionVecinos
 		FileInputStream flujo_entrada = null;
 		try {
-			flujo_entrada = new FileInputStream("ripconf-192.168.0.34.topo");
+			flujo_entrada = new FileInputStream("ripconf-" + ip.getDireccion().substring(1, ip.getDireccion().length()) + ".topo");
 		} catch (FileNotFoundException NoExisteFichero) {
 			System.out.println("Fichero inexistente");
 			System.exit(0);
 		}
+
 		Scanner entrada = new Scanner(flujo_entrada); // Se crea un objeto para escanear la linea del fichero
+		// Cambiar por TreeMap
 		ArrayList<IP> direccionVecinos = new ArrayList<IP>();
 		while (entrada.hasNextLine()) {
 			direccionVecinos.add(new IP(entrada.nextLine()));
 		}
+		System.out.println("Lista de IPs del archivo: " + direccionVecinos);// Ver archivo.topo
 		entrada.close();
 
 		// Enviar y recibir datagramas
@@ -67,6 +65,9 @@ public class Rip {
 		/*
 		 * 
 		 */
+		// for (int i = 0; i != direccionVecinos.size(); i++) {
+		// Emisor emisor = new Emisor(direccionVecinos.get(i).getInet(), new Integer(direccionVecinos.get(i).getPuerto()));
+		// }
 
 		// Abrir puerto para recibir datagramas
 		/*

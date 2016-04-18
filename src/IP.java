@@ -8,7 +8,6 @@ import java.util.Enumeration;
  *
  */
 public class IP {
-
 	private String direccion;
 	private String puerto;
 
@@ -19,22 +18,24 @@ public class IP {
 	}
 
 	public String getDireccionETH0() {
+		String interfaz = "wlan0";
 		try {
-			Enumeration e = NetworkInterface.getNetworkInterfaces();
+			Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces();
 			while (e.hasMoreElements()) {
-				NetworkInterface ni = (NetworkInterface) e.nextElement();
-				Enumeration e2 = ni.getInetAddresses();
+				NetworkInterface ni = e.nextElement();
+				Enumeration<InetAddress> e2 = ni.getInetAddresses();
 				while (e2.hasMoreElements()) {
-					InetAddress ip = (InetAddress) e2.nextElement();
-					if ("wlan0".equals(ni.getName())) { // Cambiar linea por eth0
+					InetAddress ip = e2.nextElement();
+					if (interfaz.equals(ni.getName())) { // Cambiar linea por eth0
 						return ip.toString();
 					}
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.out.println("ERROR, no se ha encontrado una IP para " + interfaz);
+			System.exit(0);
 		}
-		return "ERROR";
+		return null;
 	}
 
 	/* GETTERS Y SETTERS */
