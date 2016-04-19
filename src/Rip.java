@@ -1,6 +1,9 @@
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.SocketTimeoutException;
 import java.util.Scanner;
 import java.util.TreeMap;
 
@@ -47,7 +50,8 @@ public class Rip {
 		}
 
 		Scanner entrada = new Scanner(flujo_entrada); // Se crea un objeto para escanear la linea del fichero
-		// Cambiar por TreeMap
+
+		// Direcciones de vecinos en TreeMap
 		TreeMap<String, Router> direccionVecinos = new TreeMap<String, Router>();
 		while (entrada.hasNext()) {
 			String lectura = entrada.nextLine();
@@ -62,24 +66,42 @@ public class Rip {
 		entrada.close();
 		System.out.println("Lista de IPs del archivo: " + direccionVecinos);
 
-		// Enviar y recibir datagramas
-		Integer port = new Integer(origen.getPuerto());
-		DatagramSocket socket;
-		byte[] buffer = new byte[50]; // Tamano maximo del mensaje
-		String mensaje = new String(buffer);
+		do {
+			Integer puertoOrigen = new Integer(origen.getPuerto());
+			DatagramSocket socket;
+			byte[] buffer = new byte[50]; // Tamano maximo del mensaje (No se que numero es aun)
+			String mensaje = new String(buffer);
+			// Recibimos datagramas durante 10 segundos
+			try {
+				// Escuchamos datagramas entrantes durante 10 segundos
+				// Hay que poner en algun punto el tiempo de vida, aun no encontre donde
+				socket = new DatagramSocket(puertoOrigen, origen.getInet());
+				DatagramPacket datagrama = new DatagramPacket(buffer, buffer.length, origen.getInet(), puertoOrigen);
+				socket.receive(datagrama);
+				socket.close();
+				/*
+				 * if (Recibimos datagrama){
+				 * anotamos cuantos segundos quedan hasta 10
+				 * para volver en el mismo instante y que
+				 * siempre se envíe un pk cada 10 segundos
+				 * 
+				 * y salimos del try
+				 * }
+				 */
+			} catch (SocketTimeoutException e) {
 
-		// Enviar datagramas
-		/*
-		 * 
-		 */
-		// for (int i = 0; i != direccionVecinos.size(); i++) {
-		// Emisor emisor = new Emisor(direccionVecinos.get(i).getInet(), new Integer(direccionVecinos.get(i).getPuerto()));
-		// }
+				/*
+				 * Enviamos nuestra tabla de encaminamiento a todos los vecinos
+				 * 
+				 */
+				// CONSEJO RAUL: la primera vez solo enviar red conectada e IP propia
 
-		// Abrir puerto para recibir datagramas
-		/*
-		 * bucle recorriendo el TreeMap de las IPs del archivo .topo
-		 */
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 
+			// Si entro algun datagrama, lo comparamos con nuestra tabla
+			// y volvemos al bucle
+		} while (true);
 	}
 }
