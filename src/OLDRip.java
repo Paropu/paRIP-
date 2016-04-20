@@ -7,26 +7,26 @@ import java.net.SocketTimeoutException;
 import java.util.Scanner;
 import java.util.TreeMap;
 
-public class Rip {
+public class OLDRip {
 
 	/*
-	 * 1º Procesar argumento de entrada, u obtener la IP del ¿interna?
+	 * 1ï¿½ Procesar argumento de entrada, u obtener la IP del ï¿½interna?
 	 * - interfaz eth0 IP asociada
-	 * 2º Nombre del archivo: "ripconf-A.B.C.D.topo"
+	 * 2ï¿½ Nombre del archivo: "ripconf-A.B.C.D.topo"
 	 * - leer y procesar este fichero
 	 * 172.19.45.9:4444 <-- IPs vecinos + puerto
 	 * ------
 	 * ------
 	 * I.J.K.L/25 <-- Subred finalizada
-	 * 3º Crear sockets.[UDP]
-	 * - Configurar un tier en el socket
+	 * 3ï¿½ Crear sockets.[UDP]
+	 * - Configurar un timer en el socket
 	 * DatagramSocket
 	 * do{
 	 * try{
 	 * receive(); //Proceso paquete, Actualizo tabla;
 	 * } catch{ //Gestiona el vencimiento del temporizador
-	 * //Envía update a vecino
-	 * //¿Reset? temporizador
+	 * //Envï¿½a update a vecino
+	 * //ï¿½Reset? temporizador
 	 * }
 	 * } while (true);
 	 * 
@@ -83,7 +83,7 @@ public class Rip {
 				 * if (Recibimos datagrama){
 				 * anotamos cuantos segundos quedan hasta 10
 				 * para volver en el mismo instante y que
-				 * siempre se envíe un pk cada 10 segundos
+				 * siempre se envï¿½e un pk cada 10 segundos
 				 * 
 				 * y salimos del try
 				 * }
