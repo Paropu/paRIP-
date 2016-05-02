@@ -27,12 +27,16 @@ public class RIP {
 
 		TreeMap<String, Vecino> vecinos = new TreeMap<String, Vecino>();
 		TreeMap<String, Subred> subredes = new TreeMap<String, Subred>();
+		TreeMap<String, VectorDistancias> tabla = new TreeMap<String, VectorDistancias>();
 
 		// Creo objeto vecino con los datos del ordenador
 		Vecino local = new Vecino(args);
+		Subred localSubred = new Subred(local);
 		vecinos.put(local.getDireccion(), local);
+		tabla.put(local.getDireccion(), new VectorDistancias(local, "local"));
+		tabla.put(local.getDireccion(), new VectorDistancias(localSubred, "local"));
 
-		// Leer fichero y guardar vecinos en ArrayList direccionVecinos
+		// Leer fichero
 		FileInputStream flujo_entrada = null;
 		try {
 			flujo_entrada = new FileInputStream("ripconf-" + local.getDireccion().substring(1, local.getDireccion().length()) + ".topo");
@@ -42,18 +46,25 @@ public class RIP {
 		}
 		Scanner entrada = new Scanner(flujo_entrada); // Se crea un objeto para escanear la linea del fichero
 
-		// Direcciones de vecinos y subred en TreeMap
+		// Direcciones de vecinos y subredes en TreeMap
 		while (entrada.hasNext()) {
 			String lectura = entrada.nextLine();
 			if (lectura.contains("/")) {
 				Subred subred = new Subred(lectura);
 				subredes.put(subred.getDireccion(), subred);
+				tabla.put(subred.getDireccion(), new VectorDistancias(subred, "subred"));
 			} else {
 				Vecino vecino = new Vecino(lectura);
 				vecinos.put(vecino.getDireccion(), vecino);
+				tabla.put(vecino.getDireccion(), new VectorDistancias(vecino, "vecino"));
 			}
 		}
 		entrada.close();
+
+		/*
+		 * Hacer Tabla
+		 * Mostrar tabla
+		 */
 
 		do {
 			Integer puertoLocal = new Integer(local.getPuerto()); // Pasar puerto de String a int
@@ -76,12 +87,17 @@ public class RIP {
 				 */
 				socket.close();
 			} catch (SocketTimeoutException e) {
-
+				/*
+				 * Mostrar tabla
+				 */
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			// Si entro algun datagrama, lo comparamos con nuestra tabla
-			// y volvemos al bucle
+
+			/*
+			 * Si entro algun datagrama, lo comparamos con nuestra tabla
+			 * y volvemos al bucle
+			 */
 
 		} while (true);
 	}

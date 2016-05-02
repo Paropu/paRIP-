@@ -11,7 +11,7 @@ public class Subred {
 		this.direccionIP = direccion;
 	}
 
-	public String GetLen() {
+	public String getLen() {
 		return this.len;
 	}
 
@@ -19,10 +19,17 @@ public class Subred {
 		this.len = len;
 	}
 
+	// Constructor para subredes del fichero
 	public Subred(String subred) {
 		String[] separar = subred.split("/");
 		this.direccionIP = "/" + separar[0];
 		this.len = separar[1];
+	}
+
+	// Constructor para anunciar red propia avecinos
+	public Subred(Vecino local) {
+		this.direccionIP = local.getDireccion();
+		this.len = "32";
 	}
 
 }

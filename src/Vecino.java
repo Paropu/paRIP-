@@ -6,6 +6,8 @@ public class Vecino {
 	private String direccionIP;
 	private String puerto;
 
+	// Se puede modificar toString() si queremos
+
 	public String getDireccion() {
 		return this.direccionIP;
 	}
@@ -74,11 +76,12 @@ public class Vecino {
 				this.puerto = entrada[1];
 			} else {
 				System.out.println("ERROR recogiendo datos en constructor Vecino");
+				System.exit(0);
 			}
 		}
 	}
 
-	public Vecino(String vecino) {
+	public Vecino(String vecino) { // Constructor para vecinos del archivo
 		String[] separar = vecino.split(":");
 		this.direccionIP = "/" + separar[0];
 		if (separar.length == 2) {
