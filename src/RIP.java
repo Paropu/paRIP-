@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketTimeoutException;
+import java.util.Iterator;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.TreeMap;
 
 public class RIP {
@@ -29,12 +31,12 @@ public class RIP {
 		TreeMap<String, Subred> subredes = new TreeMap<String, Subred>();
 		TreeMap<String, VectorDistancias> tabla = new TreeMap<String, VectorDistancias>();
 
-		// Creo objeto vecino con los datos del ordenador
+		// Creo objeto vecino con los datos del ordenador y meto en tabla
 		Vecino local = new Vecino(args);
 		Subred localSubred = new Subred(local);
 		vecinos.put(local.getDireccion(), local);
-		tabla.put(local.getDireccion(), new VectorDistancias(local, "local"));
-		tabla.put(local.getDireccion(), new VectorDistancias(localSubred, "local"));
+		tabla.put(local.getDireccion() + ":" + local.getPuerto(), new VectorDistancias(local, "local")); // Añadimos IP propia a la tabla para enviar
+		tabla.put(local.getDireccion() + "/" + localSubred.getLen(), new VectorDistancias(localSubred, "local")); // Añadimos subred a la tabla propia para enviar
 
 		// Leer fichero
 		FileInputStream flujo_entrada = null;
@@ -44,27 +46,28 @@ public class RIP {
 			System.out.println("Fichero inexistente");
 			System.exit(0);
 		}
-		Scanner entrada = new Scanner(flujo_entrada); // Se crea un objeto para escanear la linea del fichero
+		Scanner entrada = new Scanner(flujo_entrada);
 
 		// Direcciones de vecinos y subredes en TreeMap
 		while (entrada.hasNext()) {
 			String lectura = entrada.nextLine();
 			if (lectura.contains("/")) {
 				Subred subred = new Subred(lectura);
-				subredes.put(subred.getDireccion(), subred);
-				tabla.put(subred.getDireccion(), new VectorDistancias(subred, "subred"));
+				subredes.put(subred.getDireccion() + "/" + subred.getLen(), subred);
+				tabla.put(subred.getDireccion() + "/" + subred.getLen(), new VectorDistancias(subred, "subred"));
 			} else {
 				Vecino vecino = new Vecino(lectura);
-				vecinos.put(vecino.getDireccion(), vecino);
-				tabla.put(vecino.getDireccion(), new VectorDistancias(vecino, "vecino"));
+				vecinos.put(vecino.getDireccion() + ":" + vecino.getPuerto(), vecino);
+				tabla.put(vecino.getDireccion() + ":" + vecino.getPuerto(), new VectorDistancias(vecino, "vecino"));
 			}
 		}
 		entrada.close();
 
-		/*
-		 * Hacer Tabla
-		 * Mostrar tabla
-		 */
+		Set<String> setTabla = tabla.keySet();
+		Iterator<String> it = setTabla.iterator();
+		while (it.hasNext()) {
+			System.out.println(tabla.get(it.next()));
+		}
 
 		do {
 			Integer puertoLocal = new Integer(local.getPuerto()); // Pasar puerto de String a int
