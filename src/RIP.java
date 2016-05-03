@@ -33,10 +33,9 @@ public class RIP {
 
 		// Creo objeto vecino con los datos del ordenador y meto en tabla
 		Vecino local = new Vecino(args);
-		Subred localSubred = new Subred(local);
+		// System.out.println(local.getDireccion()); // Ver IP local
 		vecinos.put(local.getDireccion(), local);
-		tabla.put(local.getDireccion() + ":" + local.getPuerto(), new VectorDistancias(local, "local")); // Añadimos IP propia a la tabla para enviar
-		tabla.put(local.getDireccion() + "/" + localSubred.getLen(), new VectorDistancias(localSubred, "local")); // Añadimos subred a la tabla propia para enviar
+		tabla.put(local.getDireccion(), new VectorDistancias(local, "local")); // Añadimos IP propia a la tabla para enviar
 
 		// Leer fichero
 		FileInputStream flujo_entrada = null;
@@ -53,16 +52,18 @@ public class RIP {
 			String lectura = entrada.nextLine();
 			if (lectura.contains("/")) {
 				Subred subred = new Subred(lectura);
-				subredes.put(subred.getDireccion() + "/" + subred.getLen(), subred);
-				tabla.put(subred.getDireccion() + "/" + subred.getLen(), new VectorDistancias(subred, "subred"));
+				subredes.put(subred.getDireccion(), subred);
+				tabla.put(subred.getDireccion(), new VectorDistancias(subred, "subred"));
 			} else {
 				Vecino vecino = new Vecino(lectura);
-				vecinos.put(vecino.getDireccion() + ":" + vecino.getPuerto(), vecino);
-				tabla.put(vecino.getDireccion() + ":" + vecino.getPuerto(), new VectorDistancias(vecino, "vecino"));
+				vecinos.put(vecino.getDireccion(), vecino);
+				tabla.put(vecino.getDireccion(), new VectorDistancias(vecino, "vecino"));
 			}
 		}
 		entrada.close();
 
+		// Mostrar tabla inicial
+		System.out.println("Direccion IP" + "\t\t" + "Mascara" + "\t\t\t\t" + "Siguiente salto" + "\t\t" + "Coste");
 		Set<String> setTabla = tabla.keySet();
 		Iterator<String> it = setTabla.iterator();
 		while (it.hasNext()) {
@@ -71,11 +72,11 @@ public class RIP {
 
 		do {
 			Integer puertoLocal = new Integer(local.getPuerto()); // Pasar puerto de String a int
-			DatagramSocket socket;
-			byte[] buffer = new byte[50]; // Tamano maximo del mensaje (No se que numero es aun)
+
+			byte[] buffer = new byte[100]; // Tamano maximo del mensaje (No se que numero es aun)
 			String mensaje = new String(buffer);
 			try {
-				socket = new DatagramSocket(); // Completar campos
+				DatagramSocket socket = new DatagramSocket(5512); // Completar campos
 				socket.setSoTimeout(10000);
 				DatagramPacket datagrama = new DatagramPacket(buffer, buffer.length, local.getInet(), puertoLocal);
 				socket.receive(datagrama);
@@ -90,9 +91,18 @@ public class RIP {
 				 */
 				socket.close();
 			} catch (SocketTimeoutException e) {
-				/*
-				 * Mostrar tabla
-				 */
+
+				try {
+					DatagramSocket socket = new DatagramSocket();
+					socket.connect(local.getInet(), 5512);
+					DatagramPacket datagrama = new DatagramPacket(buffer, buffer.length, local.getInet(), 5512);
+					socket.send(datagrama);
+					socket.close();
+
+				} catch (Exception e2) {
+					e.printStackTrace();
+				}
+
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
