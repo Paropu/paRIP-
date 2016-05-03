@@ -8,7 +8,7 @@ public class Emisor {
 		byte[] buffer = mensaje.getBytes();
 		try {
 			DatagramSocket socket = new DatagramSocket();
-			socket.connect(IPdestino, puertoDestino);
+			// socket.connect(IPdestino, puertoDestino);
 			DatagramPacket datagrama = new DatagramPacket(buffer, buffer.length, IPdestino, puertoDestino);
 			socket.send(datagrama);
 			socket.close();

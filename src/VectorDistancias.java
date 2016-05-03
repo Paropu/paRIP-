@@ -60,6 +60,5 @@ public class VectorDistancias {
 		} else {
 			this.coste = 1;
 		}
-
 	}
 }

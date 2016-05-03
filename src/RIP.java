@@ -16,13 +16,13 @@ public class RIP {
 		 * Obtener IP y puerto introducidos por linea de comandos.
 		 * Si no se ha introducido nada, se busca la IP del terminal y se asigna el puerto 5512.
 		 * 
-		 * Leer fichero.topo y crear dos treemaps (Vecinos y Subredes) con la información contenida.
+		 * Leer fichero.topo y crear dos treemaps (Vecinos y Subredes) con la informacion contenida.
 		 * 
 		 * while(true){
 		 * Se programa un timer de 10 segundos
-		 * Si durante ese tiempo se recibe algún datagrama, es procesado y se actualliza su vector de distancias, y si corresponde, se modifica su tabla de encaminamiento. (Bellman-Ford)
+		 * Si durante ese tiempo se recibe algun datagrama, es procesado y se actualliza su vector de distancias, y si corresponde, se modifica su tabla de encaminamiento. (Bellman-Ford)
 		 * catch(){
-		 * Cuando el tiempo se termine, se enviará un datagrama a todos los terminales vecinos y subredes con la información de su vector de distancias.
+		 * Cuando el tiempo se termine, se enviara un datagrama a todos los terminales vecinos y subredes con la informacion de su vector de distancias.
 		 * }
 		 * }
 		 */
@@ -33,7 +33,7 @@ public class RIP {
 
 		// Creo objeto vecino con los datos del ordenador y meto en tabla
 		Vecino local = new Vecino(args);
-		// System.out.println(local.getDireccion()); // Ver IP local
+		System.out.println(local.getDireccion()); // HERRAMIENTA: Ver IP local
 		vecinos.put(local.getDireccion(), local);
 		tabla.put(local.getDireccion(), new VectorDistancias(local, "local")); // A�adimos IP propia a la tabla para enviar
 
@@ -70,37 +70,41 @@ public class RIP {
 			System.out.println(tabla.get(it.next()));
 		}
 
+		// Escuchamos datagramas
 		do {
-			Integer puertoLocal = new Integer(local.getPuerto()); // Pasar puerto de String a int
-
-			byte[] buffer = new byte[100]; // Tamano maximo del mensaje (No se que numero es aun)
-			String mensaje = new String(buffer);
+			byte[] mensajeBits = new byte[1500]; // Tamano maximo del mensaje (No se que numero es aun)
 			try {
-				DatagramSocket socket = new DatagramSocket(5512); // Completar campos
+				DatagramSocket socket = new DatagramSocket(local.getPuerto(), local.getInet());
 				socket.setSoTimeout(10000);
-				DatagramPacket datagrama = new DatagramPacket(buffer, buffer.length, local.getInet(), puertoLocal);
+				DatagramPacket datagrama = new DatagramPacket(mensajeBits, mensajeBits.length);
 				socket.receive(datagrama);
+				System.out.println(datagrama);
 				/*
 				 * if (Recibimos datagrama){
 				 * anotamos cuantos segundos quedan hasta 10
 				 * para volver en el mismo instante y que
-				 * siempre se env�e un pk cada 10 segundos
+				 * siempre se envie un pk cada 10 segundos
 				 * 
 				 * y salimos del try
 				 * }
 				 */
 				socket.close();
-			} catch (SocketTimeoutException e) {
+			} catch (SocketTimeoutException e) { // �InterruptedIOException?
+				/*
+				 * Iterator<String> it2 = setTabla.iterator();
+				 * String key = it2.next();
+				 * Vecino aux = tabla.get(key);
+				 */
 
+				// Falta moverse por treemap
 				try {
-					DatagramSocket socket = new DatagramSocket();
-					socket.connect(local.getInet(), 5512);
-					DatagramPacket datagrama = new DatagramPacket(buffer, buffer.length, local.getInet(), 5512);
+					DatagramSocket socket = new DatagramSocket(local.getPuerto(), local.getInet());
+					DatagramPacket datagrama = new DatagramPacket(mensajeBits, mensajeBits.length, local.getInet(), 5512); // Direccion destino y puerto destino
 					socket.send(datagrama);
 					socket.close();
 
 				} catch (Exception e2) {
-					e.printStackTrace();
+					// e2.printStackTrace();
 				}
 
 			} catch (IOException e) {

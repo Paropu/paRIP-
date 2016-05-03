@@ -4,7 +4,7 @@ import java.util.Enumeration;
 
 public class Vecino {
 	private String direccionIP;
-	private String puerto;
+	private Integer puerto;
 
 	// Se puede modificar toString() si queremos
 
@@ -16,11 +16,11 @@ public class Vecino {
 		this.direccionIP = direccion;
 	}
 
-	public String getPuerto() {
+	public Integer getPuerto() {
 		return this.puerto;
 	}
 
-	public void setPuerto(String puerto) {
+	public void setPuerto(Integer puerto) {
 		this.puerto = puerto;
 	}
 
@@ -65,15 +65,15 @@ public class Vecino {
 	public Vecino(String[] args) { // Constructor local
 		if (args.length == 0) { // Si no tiene datos de entrada
 			this.direccionIP = this.getDireccionETH0(); // Obtiene y asigna la direccion IP del puerto "eth0"
-			this.puerto = "5512";
+			this.puerto = 5512;
 		} else {
 			String[] entrada = args[0].split(":");
 			if (entrada.length == 1) { // Si no tiene un puerto asignado
 				this.direccionIP = "/" + entrada[0];
-				this.puerto = "5512";
+				this.puerto = 5512;
 			} else if (entrada.length == 2) {
 				this.direccionIP = "/" + entrada[0];
-				this.puerto = entrada[1];
+				this.puerto = Integer.parseInt(entrada[1]);
 			} else {
 				System.out.println("ERROR recogiendo datos en constructor Vecino");
 				System.exit(0);
@@ -85,9 +85,9 @@ public class Vecino {
 		String[] separar = vecino.split(":");
 		this.direccionIP = "/" + separar[0];
 		if (separar.length == 2) {
-			this.puerto = separar[1];
+			this.puerto = Integer.parseInt(separar[1]);
 		} else {
-			this.puerto = "5512";
+			this.puerto = 5512;
 		}
 	}
 }
