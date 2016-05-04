@@ -6,6 +6,7 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.Scanner;
 import java.util.Set;
@@ -77,7 +78,7 @@ public class Rip {
 		do {
 			byte[] mensajeBits = new byte[1500];
 			try {
-				socket.setSoTimeout(2000);
+				socket.setSoTimeout(1000);
 				DatagramPacket datagrama = new DatagramPacket(mensajeBits, mensajeBits.length);
 				socket.receive(datagrama);
 				System.out.println(new String(datagrama.getData()));
@@ -87,6 +88,17 @@ public class Rip {
 				 */
 
 			} catch (SocketTimeoutException e) {
+				// Creamos mensaje con datos de la tabla
+				ByteBuffer prueba = ByteBuffer.allocate(10); // Creo ByteBuffer de 20 bytes
+				String mens = new String("ABACA7");
+
+				prueba.putShort((short) 5).put(mens.getBytes()); // introduzco un 5 y un array, short -> 2 bytes; int -> 4 bytes
+				prueba.position(0); // position 0 para leer buffer desde el principio
+
+				for (int i = 0; i < 10; i++) {
+					System.out.println(prueba.get()); // HERRAMIENTA ver bytes
+				}
+
 				String mensaje = new String("hola");
 				mensajeBits = mensaje.getBytes();
 
