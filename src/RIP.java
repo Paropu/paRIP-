@@ -3,14 +3,17 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.Iterator;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeMap;
 
 public class RIP {
-	public static void main(String[] args) {
+	public static void main(String[] args) throws SocketException, UnknownHostException {
 
 		/*
 		 * Obtener IP y puerto introducidos por linea de comandos.
@@ -71,14 +74,16 @@ public class RIP {
 		}
 
 		// Escuchamos datagramas
+		InetAddress yo = InetAddress.getLocalHost();
+		DatagramSocket socket = new DatagramSocket(local.getPuerto(), local.getInet());
 		do {
-			byte[] mensajeBits = new byte[1500]; // Tamano maximo del mensaje (No se que numero es aun)
+			System.out.println("Inicio");
+			byte[] mensajeBits = new byte[1500];
 			try {
-				DatagramSocket socket = new DatagramSocket(local.getPuerto(), local.getInet());
-				socket.setSoTimeout(10000);
+				socket.setSoTimeout(2000);
 				DatagramPacket datagrama = new DatagramPacket(mensajeBits, mensajeBits.length);
 				socket.receive(datagrama);
-				System.out.println(datagrama);
+				System.out.println(datagrama.getData());
 				/*
 				 * if (Recibimos datagrama){
 				 * anotamos cuantos segundos quedan hasta 10
@@ -88,23 +93,25 @@ public class RIP {
 				 * y salimos del try
 				 * }
 				 */
-				socket.close();
 			} catch (SocketTimeoutException e) { // ¿InterruptedIOException?
-				/*
-				 * Iterator<String> it2 = setTabla.iterator();
-				 * String key = it2.next();
-				 * Vecino aux = tabla.get(key);
-				 */
+				String mensaje = new String("hola");
+				mensajeBits = mensaje.getBytes();
 
-				// Falta moverse por treemap
+				Iterator<String> it2 = setTabla.iterator();
+				String key = null;
+				VectorDistancias aux = null;
 				try {
-					DatagramSocket socket = new DatagramSocket(local.getPuerto(), local.getInet());
-					DatagramPacket datagrama = new DatagramPacket(mensajeBits, mensajeBits.length, local.getInet(), 5512); // Direccion destino y puerto destino
-					socket.send(datagrama);
-					socket.close();
-
+					while (it2.hasNext()) {
+						key = it2.next();
+						aux = tabla.get(key);
+						if (!aux.getDireccionIP().equals(local.getDireccion())) {
+							System.out.println(aux);
+							DatagramPacket datagrama = new DatagramPacket(mensajeBits, mensajeBits.length, aux.getVecino().getInet(), aux.getVecino().getPuerto()); // Direccion destino y puerto destino
+							socket.send(datagrama);
+						}
+					}
 				} catch (Exception e2) {
-					// e2.printStackTrace();
+					e2.printStackTrace();
 				}
 
 			} catch (IOException e) {

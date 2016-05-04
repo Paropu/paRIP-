@@ -10,6 +10,7 @@ public class VectorDistancias {
 	 * - timmer y interface NO SE IMPLEMENTAN
 	 */
 
+	private Vecino vecino;
 	private String direccionIP;
 	private String mascara;
 	private String nextHop; // DireccionIP???
@@ -18,6 +19,10 @@ public class VectorDistancias {
 	@Override
 	public String toString() {
 		return this.getDireccionIP() + "\t\t" + this.getMascara() + "\t\t" + this.nextHop + "\t\t" + this.coste;
+	}
+
+	public Vecino getVecino() {
+		return this.vecino;
 	}
 
 	public String getDireccionIP() {
@@ -41,6 +46,7 @@ public class VectorDistancias {
 	 */
 
 	public VectorDistancias(Vecino vecino, String tipo) {
+		this.vecino = vecino;
 		this.direccionIP = vecino.getDireccion();
 		this.mascara = "/255.255.255.255";
 		this.nextHop = vecino.getDireccion();
