@@ -6,7 +6,7 @@ import java.net.SocketException;
 import java.util.Collections;
 import java.util.Enumeration;
 
-public class IPAddress {
+public class IPAddressHERRAMIENTA {
 
 	public static void main(String args[]) throws SocketException {
 		Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();

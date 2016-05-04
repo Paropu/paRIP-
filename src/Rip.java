@@ -3,7 +3,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
@@ -32,13 +31,13 @@ public class Rip {
 
 		TreeMap<String, Vecino> vecinos = new TreeMap<String, Vecino>();
 		TreeMap<String, Subred> subredes = new TreeMap<String, Subred>();
-		TreeMap<String, VectorDistancias> tabla = new TreeMap<String, VectorDistancias>();
+		TreeMap<String, Ruta> tabla = new TreeMap<String, Ruta>();
 
 		// Creo objeto vecino con los datos del ordenador y meto en tabla
 		Vecino local = new Vecino(args);
 		System.out.println(local.getDireccion()); // HERRAMIENTA: Ver IP local
 		vecinos.put(local.getDireccion(), local);
-		tabla.put(local.getDireccion(), new VectorDistancias(local, "local")); // Añadimos IP propia a la tabla para enviar
+		tabla.put(local.getDireccion(), new Ruta(local, "local")); // Añadimos IP propia a la tabla para enviar
 
 		// Leer fichero
 		FileInputStream flujo_entrada = null;
@@ -56,11 +55,11 @@ public class Rip {
 			if (lectura.contains("/")) {
 				Subred subred = new Subred(lectura);
 				subredes.put(subred.getDireccion(), subred);
-				tabla.put(subred.getDireccion(), new VectorDistancias(subred, "subred"));
+				tabla.put(subred.getDireccion(), new Ruta(subred, "subred"));
 			} else {
 				Vecino vecino = new Vecino(lectura);
 				vecinos.put(vecino.getDireccion(), vecino);
-				tabla.put(vecino.getDireccion(), new VectorDistancias(vecino, "vecino"));
+				tabla.put(vecino.getDireccion(), new Ruta(vecino, "vecino"));
 			}
 		}
 		entrada.close();
@@ -74,32 +73,26 @@ public class Rip {
 		}
 
 		// Escuchamos datagramas
-		InetAddress yo = InetAddress.getLocalHost();
 		DatagramSocket socket = new DatagramSocket(local.getPuerto(), local.getInet());
 		do {
-			System.out.println("Inicio");
 			byte[] mensajeBits = new byte[1500];
 			try {
 				socket.setSoTimeout(2000);
 				DatagramPacket datagrama = new DatagramPacket(mensajeBits, mensajeBits.length);
 				socket.receive(datagrama);
 				System.out.println(new String(datagrama.getData()));
+
 				/*
-				 * if (Recibimos datagrama){
-				 * anotamos cuantos segundos quedan hasta 10
-				 * para volver en el mismo instante y que
-				 * siempre se envie un pk cada 10 segundos
-				 * 
-				 * y salimos del try
-				 * }
+				 * BELLMAN-FORD
 				 */
-			} catch (SocketTimeoutException e) { // ¿InterruptedIOException?
+
+			} catch (SocketTimeoutException e) {
 				String mensaje = new String("hola");
 				mensajeBits = mensaje.getBytes();
 
 				Iterator<String> it2 = setTabla.iterator();
 				String key = null;
-				VectorDistancias aux = null;
+				Ruta aux = null;
 				try {
 					while (it2.hasNext()) {
 						key = it2.next();
@@ -116,12 +109,6 @@ public class Rip {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-
-			/*
-			 * Si entro algun datagrama, lo comparamos con nuestra tabla
-			 * y volvemos al bucle
-			 */
-
 		} while (true);
 	}
 }
