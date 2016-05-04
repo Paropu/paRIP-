@@ -12,7 +12,7 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeMap;
 
-public class RIP {
+public class Rip {
 	public static void main(String[] args) throws SocketException, UnknownHostException {
 
 		/*
@@ -83,7 +83,7 @@ public class RIP {
 				socket.setSoTimeout(2000);
 				DatagramPacket datagrama = new DatagramPacket(mensajeBits, mensajeBits.length);
 				socket.receive(datagrama);
-				System.out.println(datagrama.getData());
+				System.out.println(new String(datagrama.getData()));
 				/*
 				 * if (Recibimos datagrama){
 				 * anotamos cuantos segundos quedan hasta 10
@@ -105,7 +105,6 @@ public class RIP {
 						key = it2.next();
 						aux = tabla.get(key);
 						if (!aux.getDireccionIP().equals(local.getDireccion())) {
-							System.out.println(aux);
 							DatagramPacket datagrama = new DatagramPacket(mensajeBits, mensajeBits.length, aux.getVecino().getInet(), aux.getVecino().getPuerto()); // Direccion destino y puerto destino
 							socket.send(datagrama);
 						}
