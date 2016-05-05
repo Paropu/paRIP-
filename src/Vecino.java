@@ -1,3 +1,4 @@
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
@@ -29,19 +30,25 @@ public class Vecino {
 	 * @return IP de interfaz introducida
 	 */
 	public String getDireccionETH0() {
-		String interfaz = "wlan0";
+		String interfaz = "eth1";
+		InetAddress ip = null;
 		try {
 			Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces();
 			while (e.hasMoreElements()) {
 				NetworkInterface ni = e.nextElement();
 				Enumeration<InetAddress> e2 = ni.getInetAddresses();
 				while (e2.hasMoreElements()) {
-					InetAddress ip = e2.nextElement();
+					ip = e2.nextElement();
 					if (interfaz.equals(ni.getName())) { // Cambiar linea por eth0
-						return ip.toString();
+						if (ip instanceof Inet4Address) {
+							return ip.toString();
+						}
 					}
 				}
+
 			}
+			System.out.println("ERROR, no se ha encontrado una IP para " + interfaz);
+			System.exit(0);
 		} catch (Exception e) {
 			System.out.println("ERROR, no se ha encontrado una IP para " + interfaz);
 			System.exit(0);
