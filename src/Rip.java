@@ -99,10 +99,9 @@ public class Rip {
 				Iterator<String> it2 = setTabla.iterator();
 				String key = null;
 				Ruta ruta = null;
-				PaqueteRIPv2 pk = new PaqueteRIPv2();
 				try {
 					while (it2.hasNext()) {
-						prueba.put(pk.construirPaquete(tabla.get(it2.next())));
+						prueba.put(PaqueteRIPv2.construirPaquete(tabla.get(it2.next())));
 					}
 				} catch (Exception e2) {
 					e2.printStackTrace();
@@ -110,11 +109,21 @@ public class Rip {
 				// Introducimos en byte[]
 				prueba.rewind();
 				prueba.get(mensajeBits, 0, 504);
-				for (int i = 0; i < 50; i += 2) { // HERRAMIENTA ver bytes
+
+				// HERRAMIENTA ver bytes
+				int i = 0;
+				for (; i < 4; i += 2) {
 					System.out.print(mensajeBits[i] + " ");
 					System.out.print(mensajeBits[i + 1] + "   ");
 				}
 				System.out.println();
+				for (int j = 1; j < 4; j++) {
+					for (; i < (j * 20) + 4; i += 2) {
+						System.out.print(mensajeBits[i] + "  ");
+						System.out.print(mensajeBits[i + 1] + "\t");
+					}
+					System.out.println();
+				}
 
 				// Enviamos a vecinos
 				Set<String> setVecinos = vecinos.keySet();

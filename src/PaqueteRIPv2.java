@@ -38,10 +38,13 @@ public class PaqueteRIPv2 {
 		return cabecera;
 	}
 
-	public ByteBuffer construirPaquete(Ruta ruta) {
+	public static ByteBuffer construirPaquete(Ruta ruta) {
 		ByteBuffer datos = ByteBuffer.allocate(20);
 		datos.putShort((short) 2).putShort((short) 0);
 		// Meter IP
+		String direccion = ruta.getDireccionIP().substring(1, ruta.getDireccionIP().length());
+		String[] direccionDividida = direccion.split("\\.");
+		datos.put((byte) Integer.parseInt(direccionDividida[0])).put((byte) Integer.parseInt(direccionDividida[1])).put((byte) Integer.parseInt(direccionDividida[2])).put((byte) Integer.parseInt(direccionDividida[3]));
 
 		// Meter mascara
 		String mascara = ruta.getMascara().substring(1, ruta.getMascara().length());
@@ -57,7 +60,4 @@ public class PaqueteRIPv2 {
 		return datos;
 	}
 
-	public PaqueteRIPv2() {
-
-	}
 }
