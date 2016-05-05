@@ -76,7 +76,7 @@ public class Rip {
 		// Escuchamos datagramas
 		DatagramSocket socket = new DatagramSocket(local.getPuerto(), local.getInet());
 		do {
-			byte[] mensajeBits = new byte[304];
+			byte[] mensajeBits = new byte[504];
 			try {
 				socket.setSoTimeout(1000);
 				DatagramPacket datagrama = new DatagramPacket(mensajeBits, mensajeBits.length);
@@ -90,35 +90,43 @@ public class Rip {
 
 			} catch (SocketTimeoutException e) {
 				// Creamos mensaje con datos de la tabla
-				ByteBuffer prueba = ByteBuffer.allocate(304); // Creo ByteBuffer de 20 bytes
-				String mens = new String("ABACA7");
+				ByteBuffer prueba = ByteBuffer.allocate(504); // Creo ByteBuffer de 20 bytes
 
-				prueba.putShort((short) 5).put(mens.getBytes()); // introduzco un 5 y un array, short -> 2 bytes; int -> 4 bytes
-				prueba.position(0); // position 0 para leer buffer desde el principio
+				// Construimos cabecera
+				prueba.put(PaqueteRIPv2.construirCabecera());
 
-				/*
-				 * for (int i = 0; i < 10; i++) {
-				 * // System.out.println(prueba.get()); // HERRAMIENTA ver bytes
-				 * }
-				 */
-
-				// String mensaje = new String("hola");
-				// mensajeBits = mensaje.getBytes();
-				prueba.get(mensajeBits, 0, 8);
-				for (int i = 0; i < 10; i++) {
+				// Construimos datos
+				Iterator<String> it2 = setTabla.iterator();
+				String key = null;
+				Ruta ruta = null;
+				PaqueteRIPv2 pk = new PaqueteRIPv2();
+				try {
+					while (it2.hasNext()) {
+						prueba.put(pk.construirPaquete(tabla.get(it2.next())));
+					}
+				} catch (Exception e2) {
+					e2.printStackTrace();
+				}
+				// Introducimos en byte[]
+				prueba.rewind();
+				prueba.get(mensajeBits, 0, 504);
+				for (int i = 0; i < 50; i += 2) { // HERRAMIENTA ver bytes
 					System.out.print(mensajeBits[i] + " ");
+					System.out.print(mensajeBits[i + 1] + "   ");
 				}
 				System.out.println();
 
-				Iterator<String> it2 = setTabla.iterator();
-				String key = null;
-				Ruta aux = null;
+				// Enviamos a vecinos
+				Set<String> setVecinos = vecinos.keySet();
+				Iterator<String> it3 = setVecinos.iterator();
+				String key2 = null;
+				Vecino aux = null;
 				try {
-					while (it2.hasNext()) {
-						key = it2.next();
-						aux = tabla.get(key);
-						if (!aux.getDireccionIP().equals(local.getDireccion())) {
-							DatagramPacket datagrama = new DatagramPacket(mensajeBits, mensajeBits.length, aux.getVecino().getInet(), aux.getVecino().getPuerto()); // Direccion destino y puerto destino
+					while (it3.hasNext()) {
+						key2 = it3.next();
+						aux = vecinos.get(key2); // Cambiar por TreeMap vecinos
+						if (!aux.getDireccion().equals(local.getDireccion())) {
+							DatagramPacket datagrama = new DatagramPacket(mensajeBits, mensajeBits.length, aux.getInet(), aux.getPuerto()); // Direccion destino y puerto destino
 							socket.send(datagrama);
 						}
 					}

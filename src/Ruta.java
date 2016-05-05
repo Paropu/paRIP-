@@ -13,6 +13,7 @@ public class Ruta {
 	private Vecino vecino;
 	private String direccionIP;
 	private String mascara;
+	private Integer len;
 	private String nextHop;
 	private Integer coste;
 
@@ -33,6 +34,10 @@ public class Ruta {
 		return this.mascara;
 	}
 
+	public Integer getLen() {
+		return this.len;
+	}
+
 	public String getNextHop() {
 		return this.nextHop;
 	}
@@ -49,6 +54,7 @@ public class Ruta {
 		this.vecino = vecino;
 		this.direccionIP = vecino.getDireccion();
 		this.mascara = "/255.255.255.255";
+		this.len = 32;
 		this.nextHop = vecino.getDireccion();
 		if (tipo.contains("local")) {
 			this.coste = 0;
@@ -60,6 +66,7 @@ public class Ruta {
 	public Ruta(Subred subred, String tipo) {
 		this.direccionIP = subred.getDireccion();
 		this.mascara = subred.len2int();
+		this.len = Integer.parseInt(subred.getLen());
 		this.nextHop = subred.getDireccion();
 		if (tipo.contains("local")) {
 			this.coste = 0;

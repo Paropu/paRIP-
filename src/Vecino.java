@@ -30,7 +30,7 @@ public class Vecino {
 	 * @return IP de interfaz introducida
 	 */
 	public String getDireccionETH0() {
-		String interfaz = "eth1";
+		String interfaz = "wlan0";
 		InetAddress ip = null;
 		try {
 			Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces();

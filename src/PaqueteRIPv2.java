@@ -1,3 +1,5 @@
+import java.nio.ByteBuffer;
+
 public class PaqueteRIPv2 {
 	// Cabecera: pag 20 RFC
 	/*
@@ -29,13 +31,33 @@ public class PaqueteRIPv2 {
 	 * }
 	 */
 
-	/*
-	 * public Byte[] construirCabecera() {
-	 * 
-	 * }
-	 * 
-	 * public Byte[] contruirPaquete(TreeMap<String, Ruta> tabla) {
-	 * 
-	 * }
-	 */
+	public static ByteBuffer construirCabecera() {
+		ByteBuffer cabecera = ByteBuffer.allocate(4);
+		cabecera.put((byte) 2).put((byte) 2);
+		cabecera.rewind();
+		return cabecera;
+	}
+
+	public ByteBuffer construirPaquete(Ruta ruta) {
+		ByteBuffer datos = ByteBuffer.allocate(20);
+		datos.putShort((short) 2).putShort((short) 0);
+		// Meter IP
+
+		// Meter mascara
+		String mascara = ruta.getMascara().substring(1, ruta.getMascara().length());
+		String[] mascaraDividida = mascara.split("\\.");
+		datos.put((byte) Integer.parseInt(mascaraDividida[0])).put((byte) Integer.parseInt(mascaraDividida[1])).put((byte) Integer.parseInt(mascaraDividida[2])).put((byte) Integer.parseInt(mascaraDividida[3]));
+
+		// Meter Next Hop
+		datos.putInt(0);
+
+		// Meter Coste
+		datos.putInt(ruta.getCoste());
+		datos.rewind();
+		return datos;
+	}
+
+	public PaqueteRIPv2() {
+
+	}
 }
