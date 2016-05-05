@@ -2,8 +2,8 @@ public class PaqueteRIPv2 {
 	// Cabecera: pag 20 RFC
 	/*
 	 * 1 octeto
-	 * comand:
-	 * version:
+	 * comand: =2 // respuesta |||| =1 para request
+	 * version: =2
 	 * 
 	 * 2 octetos
 	 * contraseña =0

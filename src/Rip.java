@@ -76,12 +76,13 @@ public class Rip {
 		// Escuchamos datagramas
 		DatagramSocket socket = new DatagramSocket(local.getPuerto(), local.getInet());
 		do {
-			byte[] mensajeBits = new byte[1500];
+			byte[] mensajeBits = new byte[304];
 			try {
 				socket.setSoTimeout(1000);
 				DatagramPacket datagrama = new DatagramPacket(mensajeBits, mensajeBits.length);
 				socket.receive(datagrama);
-				System.out.println(new String(datagrama.getData()));
+				System.out.println(new String(datagrama.getData())); // Ver String
+				System.out.println(mensajeBits[2]); // Ver bits
 
 				/*
 				 * BELLMAN-FORD
@@ -89,18 +90,25 @@ public class Rip {
 
 			} catch (SocketTimeoutException e) {
 				// Creamos mensaje con datos de la tabla
-				ByteBuffer prueba = ByteBuffer.allocate(10); // Creo ByteBuffer de 20 bytes
+				ByteBuffer prueba = ByteBuffer.allocate(304); // Creo ByteBuffer de 20 bytes
 				String mens = new String("ABACA7");
 
 				prueba.putShort((short) 5).put(mens.getBytes()); // introduzco un 5 y un array, short -> 2 bytes; int -> 4 bytes
 				prueba.position(0); // position 0 para leer buffer desde el principio
 
-				for (int i = 0; i < 10; i++) {
-					System.out.println(prueba.get()); // HERRAMIENTA ver bytes
-				}
+				/*
+				 * for (int i = 0; i < 10; i++) {
+				 * // System.out.println(prueba.get()); // HERRAMIENTA ver bytes
+				 * }
+				 */
 
-				String mensaje = new String("hola");
-				mensajeBits = mensaje.getBytes();
+				// String mensaje = new String("hola");
+				// mensajeBits = mensaje.getBytes();
+				prueba.get(mensajeBits, 0, 8);
+				for (int i = 0; i < 10; i++) {
+					System.out.print(mensajeBits[i] + " ");
+				}
+				System.out.println();
 
 				Iterator<String> it2 = setTabla.iterator();
 				String key = null;
