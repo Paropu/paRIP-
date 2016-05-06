@@ -30,6 +30,14 @@ public class Rip {
 		 * }
 		 */
 
+		/*
+		 * PENDIENTE:
+		 * pasar por parametro "eth0"
+		 * diseño correcto de la tabla por pantalla
+		 * control del tiempo dentro del bucle
+		 * mejoras
+		 */
+
 		TreeMap<String, Vecino> vecinos = new TreeMap<String, Vecino>();
 		TreeMap<String, Subred> subredes = new TreeMap<String, Subred>();
 		TreeMap<String, Ruta> tabla = new TreeMap<String, Ruta>();
@@ -48,9 +56,9 @@ public class Rip {
 			System.out.println("Fichero inexistente");
 			System.exit(0);
 		}
-		Scanner entrada = new Scanner(flujo_entrada);
 
-		// Direcciones de vecinos y subredes en TreeMap
+		// Construimos vecinos y subredes, y metemos en TreeMap
+		Scanner entrada = new Scanner(flujo_entrada);
 		while (entrada.hasNext()) {
 			String lectura = entrada.nextLine();
 			if (lectura.contains("/")) {
@@ -65,35 +73,53 @@ public class Rip {
 		}
 		entrada.close();
 
-		// Mostrar tabla inicial
-		System.out.println("Direccion IP" + "\t\t" + "Mascara" + "\t\t\t\t" + "Siguiente salto" + "\t\t" + "Coste");
-		Set<String> setTabla = tabla.keySet();
-		Iterator<String> it = setTabla.iterator();
-		while (it.hasNext()) {
-			System.out.println(tabla.get(it.next()));
-		}
-
 		// Escuchamos datagramas
 		DatagramSocket socket = new DatagramSocket(local.getPuerto(), local.getInet());
 		do {
+			// Mostrar tabla inicial periodicamente
+			System.out.println("Direccion IP" + "\t\t" + "Mascara" + "\t\t\t\t" + "Siguiente salto" + "\t\t" + "Coste");
+			Set<String> setTabla = tabla.keySet();
+			Iterator<String> it = setTabla.iterator();
+			while (it.hasNext()) {
+				System.out.println(tabla.get(it.next()));
+			}
+
 			byte[] mensajeBits = new byte[504];
 			try {
-				socket.setSoTimeout(1000);
+				socket.setSoTimeout(5000);
 				DatagramPacket datagrama = new DatagramPacket(mensajeBits, mensajeBits.length);
 				socket.receive(datagrama);
-				System.out.println(new String(datagrama.getData())); // Ver String
-				System.out.println(mensajeBits[2]); // Ver bits
+
+				ByteBuffer bufferSinCabecera = ByteBuffer.allocate(500);
+				bufferSinCabecera.put(mensajeBits, 4, 500); // Quitamos cabecera
+				bufferSinCabecera.rewind();
+				byte[] mensajeSinCabecera = new byte[500];
+				bufferSinCabecera.get(mensajeSinCabecera);
 
 				/*
-				 * BELLMAN-FORD
+				 * for (int i = 0; i < 50; i++) {
+				 * System.out.print(Byte.toUnsignedInt(bufferSinCabecera.get()));
+				 * }
+				 * System.out.println();
 				 */
+				int i = 0;
+				while (mensajeSinCabecera[1 + (i * 20)] == 2) {
+					// Crear objeto ruta
+					Ruta temp = new Ruta(mensajeSinCabecera, i, datagrama.getAddress());
+					// Comprobar Bellman-Ford
+					if (temp.getDireccionIP().compareTo(local.getDireccion()) != 0 && temp.Bellman_Ford(tabla, temp)) {
+						// Sustituir en tabla
+						tabla.put(temp.getDireccionIP(), temp);
+					}
+					i++;
+				}
 
 			} catch (SocketTimeoutException e) {
 				// Creamos mensaje con datos de la tabla
-				ByteBuffer prueba = ByteBuffer.allocate(504); // Creo ByteBuffer de 20 bytes
+				ByteBuffer bufferSalida = ByteBuffer.allocate(504); // Creo ByteBuffer de 20 bytes
 
 				// Construimos cabecera
-				prueba.put(PaqueteRIPv2.construirCabecera());
+				bufferSalida.put(Ruta.construirCabecera());
 
 				// Construimos datos
 				Iterator<String> it2 = setTabla.iterator();
@@ -101,29 +127,31 @@ public class Rip {
 				Ruta ruta = null;
 				try {
 					while (it2.hasNext()) {
-						prueba.put(PaqueteRIPv2.construirPaquete(tabla.get(it2.next())));
+						bufferSalida.put(Ruta.construirPaquete(tabla.get(it2.next())));
 					}
 				} catch (Exception e2) {
 					e2.printStackTrace();
 				}
 				// Introducimos en byte[]
-				prueba.rewind();
-				prueba.get(mensajeBits, 0, 504);
+				bufferSalida.rewind();
+				bufferSalida.get(mensajeBits, 0, 504);
 
-				// HERRAMIENTA ver bytes
-				int i = 0;
-				for (; i < 4; i += 2) {
-					System.out.print(mensajeBits[i] + " ");
-					System.out.print(mensajeBits[i + 1] + "   ");
-				}
-				System.out.println();
-				for (int j = 1; j < 4; j++) {
-					for (; i < (j * 20) + 4; i += 2) {
-						System.out.print(mensajeBits[i] + "  ");
-						System.out.print(mensajeBits[i + 1] + "\t");
-					}
-					System.out.println();
-				}
+				/*
+				 * // HERRAMIENTA ver bytes
+				 * int i = 0;
+				 * for (; i < 4; i += 2) {
+				 * System.out.print(mensajeBits[i] + " ");
+				 * System.out.print(mensajeBits[i + 1] + "   ");
+				 * }
+				 * System.out.println();
+				 * for (int j = 1; j < 4; j++) {
+				 * for (; i < (j * 20) + 4; i += 2) {
+				 * System.out.print(mensajeBits[i] + "  ");
+				 * System.out.print(mensajeBits[i + 1] + "\t");
+				 * }
+				 * System.out.println();
+				 * }
+				 */
 
 				// Enviamos a vecinos
 				Set<String> setVecinos = vecinos.keySet();
