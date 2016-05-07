@@ -144,7 +144,7 @@ public class Ruta {
 		this.direccionIP = new String("/" + Byte.toUnsignedInt(mensajeBits[4 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[5 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[6 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[7 + (i * 20)]));
 		this.mascara = new String("/" + Byte.toUnsignedInt(mensajeBits[8 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[9 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[10 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[11 + (i * 20)]));
 		this.coste = 1 + (mensajeBits[19 + (i * 20)]);
-		this.nextHop = new String("/" + direccionMensajero.toString()).substring(1);
+		this.nextHop = new String(direccionMensajero.toString()).substring(1);
 		this.vecino = new Vecino(direccionMensajero+":"+puertoMensajero);
 	}
 }
