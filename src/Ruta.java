@@ -62,17 +62,22 @@ public class Ruta {
 			Ruta rutaTabla = tabla.get(it.next());
 			if (rutaTabla.getDireccionIP().compareTo(rutaNueva.getDireccionIP()) == 0) {
 				existeEnTabla = true;
-				// Comprobar si en la tabla tenemos esa dirección con mayor coste
+				
+				// Comprobar si en la tabla tenemos esa direccion con mayor coste
+				if (rutaTabla.getCoste() == rutaNueva.getCoste())
+					return false;
 				if (rutaTabla.getCoste() > rutaNueva.getCoste())
 					return true;
+			
 				// Comprobar si tenemos esa direccion con mismo next hop y mayor coste
-				if (rutaTabla.getNextHop().compareTo(rutaNueva.getNextHop()) == 0 && rutaTabla.getCoste() != rutaNueva.getCoste())
-					;
+				if (rutaTabla.getNextHop().compareTo(rutaNueva.getNextHop()) == 0 && rutaTabla.getCoste() != rutaNueva.getCoste()){
 				return true;
 			}
+			}
 		}
-		if (!existeEnTabla)
+		if (!existeEnTabla)//Si no existe en la tabla se anhade
 			return true;
+		
 		// Si no se cumplen
 		return false;
 	}
@@ -135,10 +140,11 @@ public class Ruta {
 		}
 	}
 
-	public Ruta(byte[] mensajeBits, int i, InetAddress direccionMensajero) {
+	public Ruta(byte[] mensajeBits, int i, InetAddress direccionMensajero, int puertoMensajero) {
 		this.direccionIP = new String("/" + Byte.toUnsignedInt(mensajeBits[4 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[5 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[6 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[7 + (i * 20)]));
 		this.mascara = new String("/" + Byte.toUnsignedInt(mensajeBits[8 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[9 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[10 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[11 + (i * 20)]));
 		this.coste = 1 + (mensajeBits[19 + (i * 20)]);
 		this.nextHop = new String("/" + direccionMensajero.toString()).substring(1);
+		this.vecino = new Vecino(direccionMensajero+":"+puertoMensajero);
 	}
 }

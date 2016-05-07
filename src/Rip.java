@@ -33,7 +33,7 @@ public class Rip {
 		/*
 		 * PENDIENTE:
 		 * pasar por parametro "eth0"
-		 * diseño correcto de la tabla por pantalla
+		 * disenho correcto de la tabla por pantalla
 		 * control del tiempo dentro del bucle
 		 * mejoras
 		 */
@@ -46,7 +46,7 @@ public class Rip {
 		Vecino local = new Vecino(args);
 		System.out.println(local.getDireccion()); // HERRAMIENTA: Ver IP local
 		vecinos.put(local.getDireccion(), local);
-		tabla.put(local.getDireccion(), new Ruta(local, "local")); // Añadimos IP propia a la tabla para enviar
+		tabla.put(local.getDireccion(), new Ruta(local, "local")); // Anadimos IP propia a la tabla para enviar
 
 		// Leer fichero
 		FileInputStream flujo_entrada = null;
@@ -105,11 +105,13 @@ public class Rip {
 				int i = 0;
 				while (mensajeSinCabecera[1 + (i * 20)] == 2) {
 					// Crear objeto ruta
-					Ruta temp = new Ruta(mensajeSinCabecera, i, datagrama.getAddress());
+					Ruta temp = new Ruta(mensajeSinCabecera, i, datagrama.getAddress(), datagrama.getPort());
 					// Comprobar Bellman-Ford
 					if (temp.getDireccionIP().compareTo(local.getDireccion()) != 0 && temp.Bellman_Ford(tabla, temp)) {
 						// Sustituir en tabla
 						tabla.put(temp.getDireccionIP(), temp);
+						// Anadir a TreeMap vecinos para poder enviar a partir de ahora
+						vecinos.put(datagrama.getAddress().toString(), new Vecino(datagrama.getAddress().toString()+":"+datagrama.getPort()));
 					}
 					i++;
 				}
@@ -161,8 +163,9 @@ public class Rip {
 				try {
 					while (it3.hasNext()) {
 						key2 = it3.next();
-						aux = vecinos.get(key2); // Cambiar por TreeMap vecinos
+						aux = vecinos.get(key2);
 						if (!aux.getDireccion().equals(local.getDireccion())) {
+							System.out.println(aux.getPuerto());
 							DatagramPacket datagrama = new DatagramPacket(mensajeBits, mensajeBits.length, aux.getInet(), aux.getPuerto()); // Direccion destino y puerto destino
 							socket.send(datagrama);
 						}
