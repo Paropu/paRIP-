@@ -37,13 +37,13 @@ public class Rip {
 		 * control del tiempo dentro del bucle
 		 * mejoras
 		 */
-
+		final String interfaz = "en0";
 		TreeMap<String, Vecino> vecinos = new TreeMap<String, Vecino>();
 		TreeMap<String, Subred> subredes = new TreeMap<String, Subred>();
 		TreeMap<String, Ruta> tabla = new TreeMap<String, Ruta>();
 
 		// Creo objeto vecino con los datos del ordenador y meto en tabla
-		Vecino local = new Vecino(args);
+		Vecino local = new Vecino(args,interfaz);
 		System.out.println(local.getDireccion()); // HERRAMIENTA: Ver IP local
 		vecinos.put(local.getDireccion(), local);
 		tabla.put(local.getDireccion(), new Ruta(local, "local")); // Anadimos IP propia a la tabla para enviar
@@ -164,8 +164,8 @@ public class Rip {
 					while (it3.hasNext()) {
 						key2 = it3.next();
 						aux = vecinos.get(key2);
-						System.out.println("Envio a " + aux.getDireccion());
-						if (!aux.getDireccion().equals(local.getDireccion())) {
+						if (aux.getDireccion().compareTo(local.getDireccion()) != 0) {
+							System.out.println("Envio a " + aux.getDireccion());
 							DatagramPacket datagrama = new DatagramPacket(mensajeBits, mensajeBits.length, aux.getInet(), aux.getPuerto()); // Direccion destino y puerto destino
 							socket.send(datagrama);
 						}

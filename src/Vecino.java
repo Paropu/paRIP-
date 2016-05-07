@@ -29,8 +29,7 @@ public class Vecino {
 	 * 
 	 * @return IP de interfaz introducida
 	 */
-	public String getDireccionETH0() {
-		String interfaz = "wlan0";
+	public String getDireccionETH0(String interfaz) {
 		InetAddress ip = null;
 		try {
 			Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces();
@@ -69,9 +68,9 @@ public class Vecino {
 		return addr;
 	}
 
-	public Vecino(String[] args) { // Constructor local
+	public Vecino(String[] args,String interfaz) { // Constructor local
 		if (args.length == 0) { // Si no tiene datos de entrada
-			this.direccionIP = this.getDireccionETH0(); // Obtiene y asigna la direccion IP del puerto "eth0"
+			this.direccionIP = this.getDireccionETH0(interfaz); // Obtiene y asigna la direccion IP del puerto "eth0"
 			this.puerto = 5512;
 		} else {
 			String[] entrada = args[0].split(":");
