@@ -7,10 +7,12 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeMap;
+import static java.lang.Math.toIntExact;
 
 public class Rip {
 	public static void main(String[] args) throws SocketException, UnknownHostException {
@@ -32,11 +34,10 @@ public class Rip {
 
 		/*
 		 * PENDIENTE:
-		 * pasar por parametro "eth0"
 		 * disenho correcto de la tabla por pantalla
-		 * control del tiempo dentro del bucle
 		 * mejoras
 		 */
+		
 		final String interfaz = "en0";
 		TreeMap<String, Vecino> vecinos = new TreeMap<String, Vecino>();
 		TreeMap<String, Subred> subredes = new TreeMap<String, Subred>();
@@ -80,16 +81,30 @@ public class Rip {
 			System.out.println("Direccion IP" + "\t\t" + "Mascara" + "\t\t\t\t" + "Siguiente salto" + "\t\t" + "Coste");
 			Set<String> setTabla = tabla.keySet();
 			Iterator<String> it = setTabla.iterator();
+			boolean interrumpido = false;
+			int difMiliseg = 0;
 			while (it.hasNext()) {
 				System.out.println(tabla.get(it.next()));
 			}
 
 			byte[] mensajeBits = new byte[504];
 			try {
-				socket.setSoTimeout(5000);
+				GregorianCalendar tiempoInicial = new GregorianCalendar();
+				long milisegInicial = tiempoInicial.getTimeInMillis();
+				if(interrumpido) socket.setSoTimeout(difMiliseg);
+				else{
+					socket.setSoTimeout(5000);
+				}
+				interrumpido = false;
 				DatagramPacket datagrama = new DatagramPacket(mensajeBits, mensajeBits.length);
 				socket.receive(datagrama);
 
+				//Quitar cabecera
+				interrumpido = true;
+				GregorianCalendar tiempoFinal = new GregorianCalendar();
+				long milisegFinal = tiempoFinal.getTimeInMillis();
+				difMiliseg = toIntExact(milisegFinal - milisegInicial);
+				
 				ByteBuffer bufferSinCabecera = ByteBuffer.allocate(500);
 				bufferSinCabecera.put(mensajeBits, 4, 500); // Quitamos cabecera
 				bufferSinCabecera.rewind();
