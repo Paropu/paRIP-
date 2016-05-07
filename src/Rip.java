@@ -76,13 +76,18 @@ public class Rip {
 
 		// Escuchamos datagramas
 		DatagramSocket socket = new DatagramSocket(local.getPuerto(), local.getInet());
+		int ii=0;
+		boolean interrumpido = false;
+		int difMiliseg = 0;
+
 		do {
 			// Mostrar tabla inicial periodicamente
-			System.out.println("Direccion IP" + "\t\t" + "Mascara" + "\t\t\t\t" + "Siguiente salto" + "\t\t" + "Coste");
+			System.out.print(ii);
+			ii++;
+			System.out.println("\nDireccion IP" + "\t\t" + "Mascara" + "\t\t\t\t" + "Siguiente salto" + "\t\t" + "Coste");
 			Set<String> setTabla = tabla.keySet();
 			Iterator<String> it = setTabla.iterator();
-			boolean interrumpido = false;
-			int difMiliseg = 0;
+			
 			while (it.hasNext()) {
 				System.out.println(tabla.get(it.next()));
 			}
@@ -91,9 +96,10 @@ public class Rip {
 			try {
 				GregorianCalendar tiempoInicial = new GregorianCalendar();
 				long milisegInicial = tiempoInicial.getTimeInMillis();
-				if(interrumpido) socket.setSoTimeout(difMiliseg);
-				else{
-					socket.setSoTimeout(5000);
+				if(interrumpido){ 
+					socket.setSoTimeout(difMiliseg);
+				}else{
+					socket.setSoTimeout(10000);
 				}
 				interrumpido = false;
 				DatagramPacket datagrama = new DatagramPacket(mensajeBits, mensajeBits.length);
@@ -126,7 +132,7 @@ public class Rip {
 						// Sustituir en tabla
 						tabla.put(temp.getDireccionIP(), temp);
 						// Anadir a TreeMap vecinos para poder enviar a partir de ahora
-						vecinos.put(datagrama.getAddress().toString(), new Vecino(temp.getNextHop()+":"+datagrama.getPort()));
+						vecinos.put(datagrama.getAddress().toString(), new Vecino(temp.getNextHop().substring(1)+":"+datagrama.getPort()));
 					}
 					i++;
 				}

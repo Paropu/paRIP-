@@ -94,6 +94,7 @@ public class Ruta {
 	public static ByteBuffer construirPaquete(Ruta ruta) {
 		ByteBuffer datos = ByteBuffer.allocate(20);
 		datos.putShort((short) 2).putShort((short) 0);
+		
 		// Meter IP
 		String direccion = ruta.getDireccionIP().substring(1, ruta.getDireccionIP().length());
 		String[] direccionDividida = direccion.split("\\.");
@@ -146,7 +147,7 @@ public class Ruta {
 		this.direccionIP = new String("/" + Byte.toUnsignedInt(mensajeBits[4 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[5 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[6 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[7 + (i * 20)]));
 		this.mascara = new String("/" + Byte.toUnsignedInt(mensajeBits[8 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[9 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[10 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[11 + (i * 20)]));
 		this.coste = 1 + (mensajeBits[19 + (i * 20)]);
-		this.nextHop = new String(direccionMensajero.toString()).substring(1);
+		this.nextHop = new String(direccionMensajero.toString());
 		this.vecino = new Vecino(direccionMensajero+":"+puertoMensajero);
 	}
 }
