@@ -111,7 +111,7 @@ public class Rip {
 						// Sustituir en tabla
 						tabla.put(temp.getDireccionIP(), temp);
 						// Anadir a TreeMap vecinos para poder enviar a partir de ahora
-						vecinos.put(datagrama.getAddress().toString(), new Vecino(datagrama.getAddress().toString()+":"+datagrama.getPort()));
+						vecinos.put(datagrama.getAddress().toString(), new Vecino(datagrama.getAddress().toString() + ":" + datagrama.getPort()));
 					}
 					i++;
 				}
@@ -165,7 +165,6 @@ public class Rip {
 						key2 = it3.next();
 						aux = vecinos.get(key2);
 						if (!aux.getDireccion().equals(local.getDireccion())) {
-							System.out.println(aux.getPuerto());
 							DatagramPacket datagrama = new DatagramPacket(mensajeBits, mensajeBits.length, aux.getInet(), aux.getPuerto()); // Direccion destino y puerto destino
 							socket.send(datagrama);
 						}
