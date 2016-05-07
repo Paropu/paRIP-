@@ -55,29 +55,31 @@ public class Ruta {
 		Set<String> setTabla = tabla.keySet();
 		Iterator<String> it = setTabla.iterator();
 		boolean existeEnTabla = false;
+		Ruta rutaTabla = null;
 
 		while (it.hasNext()) {
-			existeEnTabla = false;
+			rutaTabla = tabla.get(it.next());
 
-			Ruta rutaTabla = tabla.get(it.next());
 			if (rutaTabla.getDireccionIP().compareTo(rutaNueva.getDireccionIP()) == 0) {
 				existeEnTabla = true;
-				
-				// Comprobar si en la tabla tenemos esa direccion con mayor coste
+
 				if (rutaTabla.getCoste() == rutaNueva.getCoste())
 					return false;
-				if (rutaTabla.getCoste() > rutaNueva.getCoste())
+
+				// Comprobar si en la tabla tenemos esa direccion con mayor coste
+				if (rutaTabla.getCoste() > rutaNueva.getCoste()) {
 					return true;
-			
+				}
+
 				// Comprobar si tenemos esa direccion con mismo next hop y mayor coste
-				if (rutaTabla.getNextHop().compareTo(rutaNueva.getNextHop()) == 0 && rutaTabla.getCoste() != rutaNueva.getCoste()){
-				return true;
-			}
+				if (rutaTabla.getNextHop().compareTo(rutaNueva.getNextHop()) == 0 && rutaTabla.getCoste() != rutaNueva.getCoste()) {
+					return true;
+				}
 			}
 		}
-		if (!existeEnTabla)//Si no existe en la tabla se anhade
+		if (!existeEnTabla) {// Si no existe en la tabla se anhade
 			return true;
-		
+		}
 		// Si no se cumplen
 		return false;
 	}

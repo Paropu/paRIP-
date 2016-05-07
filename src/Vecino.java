@@ -30,7 +30,7 @@ public class Vecino {
 	 * @return IP de interfaz introducida
 	 */
 	public String getDireccionETH0() {
-		String interfaz = "en0";
+		String interfaz = "wlan0";
 		InetAddress ip = null;
 		try {
 			Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces();
@@ -97,8 +97,8 @@ public class Vecino {
 			this.puerto = 5512;
 		}
 	}
-	
-	public Vecino(Ruta ruta){
+
+	public Vecino(Ruta ruta) {
 		this.setDireccion(ruta.getDireccionIP());
 		this.setPuerto(ruta.getVecino().getPuerto());
 	}

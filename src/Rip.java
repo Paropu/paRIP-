@@ -166,7 +166,6 @@ public class Rip {
 						aux = vecinos.get(key2);
 						System.out.println("Envio a " + aux.getDireccion());
 						if (!aux.getDireccion().equals(local.getDireccion())) {
-							System.out.println(aux.getPuerto());
 							DatagramPacket datagrama = new DatagramPacket(mensajeBits, mensajeBits.length, aux.getInet(), aux.getPuerto()); // Direccion destino y puerto destino
 							socket.send(datagrama);
 						}
