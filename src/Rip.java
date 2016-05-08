@@ -24,7 +24,7 @@ public class Rip {
 		 * 
 		 * Mejoras:
 		 * HECHO --> Split Horizon: No se envía las direcciones de la tabla a la dirección NextHop
-		 * Triggered Updates: Envío inmediato de la tabla cuando haya un cambio
+		 * HECHO --> Triggered Updates: Envío inmediato de la tabla cuando haya un cambio
 		 */
 
 		final String interfaz = "wlan0";
@@ -121,6 +121,7 @@ public class Rip {
 						tabla.put(temp.getDireccionIP(), temp);
 						// Anadir a TreeMap vecinos para poder enviar a partir de ahora
 						vecinos.put(datagrama.getAddress().toString(), new Vecino(temp.getNextHop().substring(1) + ":" + datagrama.getPort()));
+						throw new SocketTimeoutException();
 					}
 					i++;
 				}
