@@ -91,7 +91,7 @@ public class Ruta {
 		return cabecera;
 	}
 
-	public static ByteBuffer construirPaquete(Ruta ruta) {
+	public static ByteBuffer construirPaquete(TreeMap<String, Ruta> tabla,String dirDestino) {
 		ByteBuffer datos = ByteBuffer.allocate(20);
 		datos.putShort((short) 2).putShort((short) 0);
 		

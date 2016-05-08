@@ -15,28 +15,17 @@ import java.util.TreeMap;
 import static java.lang.Math.toIntExact;
 
 public class Rip {
-	public static void main(String[] args) throws SocketException, UnknownHostException {
-
-		/*
-		 * Obtener IP y puerto introducidos por linea de comandos.
-		 * Si no se ha introducido nada, se busca la IP del terminal y se asigna el puerto 5512.
-		 * 
-		 * Leer fichero.topo y crear dos treemaps (Vecinos y Subredes) con la informacion contenida.
-		 * 
-		 * while(true){
-		 * Se programa un timer de 10 segundos
-		 * Si durante ese tiempo se recibe algun datagrama, es procesado y se actualliza su vector de distancias, y si corresponde, se modifica su tabla de encaminamiento. (Bellman-Ford)
-		 * catch(){
-		 * Cuando el tiempo se termine, se enviara un datagrama a todos los terminales vecinos y subredes con la informacion de su vector de distancias.
-		 * }
-		 * }
-		 */
+	public static void main(String[] args) throws IOException {
 
 		/*
 		 * PENDIENTE:
-		 * arreglar tiempo
+		 * eliminar de la tabla si lleva mas de 30 segundos sin llegar (Se cae un nodo)
+		 * que en lugar de 10 segundos sea un numero aleatorio (p.e. entre 8 y 12)
 		 * disenho correcto de la tabla por pantalla
-		 * mejoras
+		 * 
+		 * Mejoras:
+		 * 	Split Horizon: No se envía las direcciones de la tabla a la dirección NextHop
+		 * 	Triggered Updates: Envío inmediato de la tabla cuando haya un cambio
 		 */
 		
 		final String interfaz = "en0";
@@ -145,24 +134,7 @@ public class Rip {
 
 			} catch (SocketTimeoutException e) {
 				System.out.println("Se acabo el tiempo");
-				// Creamos mensaje con datos de la tabla
-				ByteBuffer bufferSalida = ByteBuffer.allocate(504);
-
-				// Construimos cabecera
-				bufferSalida.put(Ruta.construirCabecera());
-
-				// Construimos datos
-				Iterator<String> it2 = setTabla.iterator();
-				try {
-					while (it2.hasNext()) {
-						bufferSalida.put(Ruta.construirPaquete(tabla.get(it2.next())));
-					}
-				} catch (Exception e2) {
-					e2.printStackTrace();
-				}
-				// Introducimos en byte[]
-				bufferSalida.rewind();
-				bufferSalida.get(mensajeBits, 0, 504);
+				
 
 				/*
 				 * // HERRAMIENTA ver bytes
@@ -184,22 +156,33 @@ public class Rip {
 				// Enviamos a vecinos
 				Set<String> setVecinos = vecinos.keySet();
 				Iterator<String> it3 = setVecinos.iterator();
+				Iterator<String> it2 = setTabla.iterator();
 				Vecino aux = null;
+				// Creamos mensaje con datos de la tabla
+				ByteBuffer bufferSalida = ByteBuffer.allocate(504);
+
+				// Construimos cabecera
+				bufferSalida.put(Ruta.construirCabecera());
+
+				// Construimos datos
 				try {
 					while (it3.hasNext()) {
-						aux = vecinos.get(it3.next());
+						String dirDestino = it3.next();
+						bufferSalida.put(Ruta.construirPaquete(tabla,vecinos.get(dirDestino).getDireccion()));
+						// Introducimos en byte[]
+						bufferSalida.rewind();
+						bufferSalida.get(mensajeBits, 0, 504);
+						aux = vecinos.get(dirDestino);
 						if (aux.getDireccion().compareTo(local.getDireccion()) != 0) {
 							System.out.println("Envio a " + aux.getDireccion() + ":" + aux.getPuerto());
 							DatagramPacket datagrama = new DatagramPacket(mensajeBits, mensajeBits.length, aux.getInet(), aux.getPuerto()); // Direccion destino y puerto destino
 							socket.send(datagrama);
 						}
+						
 					}
 				} catch (Exception e2) {
 					e2.printStackTrace();
 				}
-
-			} catch (IOException e) {
-				e.printStackTrace();
 			}
 		} while (true);
 	}
