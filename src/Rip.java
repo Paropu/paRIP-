@@ -23,7 +23,7 @@ public class Rip {
 		 * disenho correcto de la tabla por pantalla
 		 * 
 		 * Mejoras:
-		 * Split Horizon: No se envía las direcciones de la tabla a la dirección NextHop
+		 * HECHO --> Split Horizon: No se envía las direcciones de la tabla a la dirección NextHop
 		 * Triggered Updates: Envío inmediato de la tabla cuando haya un cambio
 		 */
 
@@ -110,13 +110,6 @@ public class Rip {
 				byte[] mensajeSinCabecera = new byte[500];
 				bufferSinCabecera.get(mensajeSinCabecera);
 
-				/*
-				 * for (int i = 0; i < 50; i++) {
-				 * System.out.print(Byte.toUnsignedInt(bufferSinCabecera.get()));
-				 * }
-				 * System.out.println();
-				 */
-
 				int i = 0;
 				while (mensajeSinCabecera[1 + (i * 20)] == 2) {
 					// Crear objeto ruta
@@ -135,23 +128,6 @@ public class Rip {
 			} catch (SocketTimeoutException e) {
 				System.out.println("Se acabo el tiempo");
 
-				/*
-				 * // HERRAMIENTA ver bytes
-				 * int i = 0;
-				 * for (; i < 4; i += 2) {
-				 * System.out.print(mensajeBits[i] + " ");
-				 * System.out.print(mensajeBits[i + 1] + "   ");
-				 * }
-				 * System.out.println();
-				 * for (int j = 1; j < 4; j++) {
-				 * for (; i < (j * 20) + 4; i += 2) {
-				 * System.out.print(mensajeBits[i] + "  ");
-				 * System.out.print(mensajeBits[i + 1] + "\t");
-				 * }
-				 * System.out.println();
-				 * }
-				 */
-
 				// Enviamos a vecinos
 				Set<String> setVecinos = vecinos.keySet();
 				Iterator<String> itVecinos = setVecinos.iterator();
@@ -169,6 +145,22 @@ public class Rip {
 						// Introducimos en byte[]
 						bufferSalida.rewind();
 						bufferSalida.get(mensajeBits, 0, 504);
+						/*
+						 * // HERRAMIENTA ver bytes
+						 * int i = 0;
+						 * for (; i < 4; i += 2) {
+						 * System.out.print(mensajeBits[i] + " ");
+						 * System.out.print(mensajeBits[i + 1] + "   ");
+						 * }
+						 * System.out.println();
+						 * for (int j = 1; j < 4; j++) {
+						 * for (; i < (j * 20) + 4; i += 2) {
+						 * System.out.print(mensajeBits[i] + "  ");
+						 * System.out.print(mensajeBits[i + 1] + "\t");
+						 * }
+						 * System.out.println();
+						 * }
+						 */
 						aux = vecinos.get(dirDestino);
 						if (aux.getDireccion().compareTo(local.getDireccion()) != 0) {
 							System.out.println("Envio a " + aux.getDireccion() + ":" + aux.getPuerto());
