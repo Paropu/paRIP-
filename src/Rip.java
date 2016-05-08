@@ -1,5 +1,4 @@
 import static java.lang.Math.toIntExact;
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -7,6 +6,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
+import java.util.ConcurrentModificationException;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.Scanner;
@@ -18,15 +18,17 @@ public class Rip {
 
 		/*
 		 * PENDIENTE:
-		 * eliminar de la tabla si lleva mas de 30 segundos sin llegar (Se cae un nodo)
 		 * disenho correcto de la tabla por pantalla
 		 * 
 		 * Mejoras:
 		 * HECHO --> Split Horizon: No se envía las direcciones de la tabla a la dirección NextHop
 		 * HECHO --> Triggered Updates: Envío inmediato de la tabla cuando haya un cambio
+		 * 
+		 * Dudas: Triggered update al borrar entrada de tabla?
 		 */
-
-		final String interfaz = "wlan0";
+		
+		final int tiempoMax = 30000;	//tiempo maximo hasta borrar entrada de tabla
+		final String interfaz = "wlan0";	//nombre de interfaz donde obtener IP por defecto
 		TreeMap<String, Vecino> vecinos = new TreeMap<String, Vecino>();
 		TreeMap<String, Subred> subredes = new TreeMap<String, Subred>();
 		TreeMap<String, Ruta> tabla = new TreeMap<String, Ruta>();
@@ -67,6 +69,7 @@ public class Rip {
 		int ii = 0;
 		boolean interrumpido = false;
 		int difMiliseg = 0;
+		int numeroAleatorio = 10000;
 
 		do {
 			System.out.print(ii);
@@ -75,10 +78,21 @@ public class Rip {
 			System.out.println("\nDireccion IP" + "\t\t" + "Mascara" + "\t\t\t\t" + "Siguiente salto" + "\t\t" + "Coste");
 			Set<String> setTabla = tabla.keySet();
 			Iterator<String> it = setTabla.iterator();
-			int numeroAleatorio = 10000;
-			
+			String key = null;
+			try{
 			while (it.hasNext()) {
-				System.out.println(tabla.get(it.next()));
+				key = it.next();
+				GregorianCalendar horaActual = new GregorianCalendar();
+				//Si llevamos mas de tiempoMax sin recibir esta entrada, la borramos
+				if((tabla.get(key).getTimer() != 0 && (horaActual.getTime().getTime()-tabla.get(key).getTimer()) > tiempoMax)){
+					vecinos.remove(tabla.get(key).getDireccionIP());
+					tabla.remove(key);
+				}else{
+					System.out.println(tabla.get(key));
+				}
+			}
+			}catch(ConcurrentModificationException e3){
+				e3.fillInStackTrace();
 			}
 
 			// Escuchamos datagramas entrantes
@@ -90,7 +104,7 @@ public class Rip {
 					System.out.println("tiempo restante: " + (numeroAleatorio - difMiliseg));
 					socket.setSoTimeout((numeroAleatorio - difMiliseg));
 				} else {
-					numeroAleatorio = (int) (Math.random()*(12000-8000+1)+8000);
+					numeroAleatorio = (int) (Math.random()*(15000-5000+1)+5000);	//(Max-min+1)+min
 					System.out.println("tiempo reiniciado: " + numeroAleatorio);
 					socket.setSoTimeout(numeroAleatorio);
 				}
@@ -114,7 +128,8 @@ public class Rip {
 				int i = 0;
 				while (mensajeSinCabecera[1 + (i * 20)] == 2) {
 					// Crear objeto ruta
-					Ruta temp = new Ruta(mensajeSinCabecera, i, datagrama.getAddress(), datagrama.getPort());
+					GregorianCalendar horaRecibido = new GregorianCalendar();
+					Ruta temp = new Ruta(mensajeSinCabecera, i, datagrama.getAddress(), datagrama.getPort(),horaRecibido.getTime().getTime());
 					// Comprobar Bellman-Ford
 					if (temp.getDireccionIP().compareTo(local.getDireccion()) != 0 && temp.Bellman_Ford(tabla, temp)) {
 						// Sustituir en tabla
@@ -169,7 +184,6 @@ public class Rip {
 							DatagramPacket datagrama = new DatagramPacket(mensajeBits, mensajeBits.length, aux.getInet(), aux.getPuerto()); // Direccion destino y puerto destino
 							socket.send(datagrama);
 						}
-
 					}
 				} catch (Exception e2) {
 					e2.printStackTrace();

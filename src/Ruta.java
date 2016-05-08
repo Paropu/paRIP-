@@ -1,19 +1,11 @@
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
+import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeMap;
 
 public class Ruta {
-
-	/*
-	 * Pagina 8 de las especificaciones
-	 * - address: in IP implementations of these algorithms, this will be the IP address of the host or network.
-	 * - router: the first router along the route to the destination.
-	 * - metric: a number, indicating the distance to the destination.
-	 * 
-	 * - timmer y interface NO SE IMPLEMENTAN
-	 */
 
 	private Vecino vecino;
 	private String direccionIP;
@@ -21,6 +13,7 @@ public class Ruta {
 	private Integer len;
 	private String nextHop;
 	private Integer coste;
+	private long timer;
 
 	@Override
 	public String toString() {
@@ -49,6 +42,10 @@ public class Ruta {
 
 	public Integer getCoste() {
 		return this.coste;
+	}
+	
+	public long getTimer(){
+		return this.timer;
 	}
 
 	public Boolean Bellman_Ford(TreeMap<String, Ruta> tabla, Ruta rutaNueva) {
@@ -154,11 +151,12 @@ public class Ruta {
 	}
 
 	// Constr. mensajes entrantes
-	public Ruta(byte[] mensajeBits, int i, InetAddress direccionMensajero, int puertoMensajero) {
+	public Ruta(byte[] mensajeBits, int i, InetAddress direccionMensajero, int puertoMensajero,long timer) {
 		this.direccionIP = new String("/" + Byte.toUnsignedInt(mensajeBits[4 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[5 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[6 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[7 + (i * 20)]));
 		this.mascara = new String("/" + Byte.toUnsignedInt(mensajeBits[8 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[9 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[10 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[11 + (i * 20)]));
 		this.coste = 1 + (mensajeBits[19 + (i * 20)]);
 		this.nextHop = new String(direccionMensajero.toString());
 		this.vecino = new Vecino(direccionMensajero + ":" + puertoMensajero);
+		this.timer = timer;
 	}
 }
