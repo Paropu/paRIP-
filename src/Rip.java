@@ -19,7 +19,6 @@ public class Rip {
 		/*
 		 * PENDIENTE:
 		 * eliminar de la tabla si lleva mas de 30 segundos sin llegar (Se cae un nodo)
-		 * que en lugar de 10 segundos sea un numero aleatorio (p.e. entre 8 y 12)
 		 * disenho correcto de la tabla por pantalla
 		 * 
 		 * Mejoras:
@@ -28,7 +27,6 @@ public class Rip {
 		 */
 
 		final String interfaz = "wlan0";
-		final int cuantaAtras = 5000;
 		TreeMap<String, Vecino> vecinos = new TreeMap<String, Vecino>();
 		TreeMap<String, Subred> subredes = new TreeMap<String, Subred>();
 		TreeMap<String, Ruta> tabla = new TreeMap<String, Ruta>();
@@ -77,6 +75,8 @@ public class Rip {
 			System.out.println("\nDireccion IP" + "\t\t" + "Mascara" + "\t\t\t\t" + "Siguiente salto" + "\t\t" + "Coste");
 			Set<String> setTabla = tabla.keySet();
 			Iterator<String> it = setTabla.iterator();
+			int numeroAleatorio = 10000;
+			
 			while (it.hasNext()) {
 				System.out.println(tabla.get(it.next()));
 			}
@@ -86,12 +86,13 @@ public class Rip {
 			try {
 				GregorianCalendar tiempoInicial = new GregorianCalendar();
 				long milisegInicial = tiempoInicial.getTimeInMillis();
-				if (interrumpido && (difMiliseg < cuantaAtras)) {
-					System.out.println("tiempo restante: " + (cuantaAtras - difMiliseg));
-					socket.setSoTimeout((cuantaAtras - difMiliseg));
+				if (interrumpido && (difMiliseg < numeroAleatorio)) {
+					System.out.println("tiempo restante: " + (numeroAleatorio - difMiliseg));
+					socket.setSoTimeout((numeroAleatorio - difMiliseg));
 				} else {
-					System.out.println("tiempo reiniciado: " + cuantaAtras);
-					socket.setSoTimeout(cuantaAtras);
+					numeroAleatorio = (int) (Math.random()*(12000-8000+1)+8000);
+					System.out.println("tiempo reiniciado: " + numeroAleatorio);
+					socket.setSoTimeout(numeroAleatorio);
 				}
 				interrumpido = false;
 				DatagramPacket datagrama = new DatagramPacket(mensajeBits, mensajeBits.length);
