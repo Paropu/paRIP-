@@ -118,6 +118,7 @@ public class Ruta {
 	 * Constructores
 	 */
 
+	//Constr. vecinos fichero
 	public Ruta(Vecino vecino, String tipo) {
 		this.vecino = vecino;
 		this.direccionIP = vecino.getDireccion();
@@ -131,6 +132,7 @@ public class Ruta {
 		}
 	}
 
+	//Constr. subredes fichero
 	public Ruta(Subred subred, String tipo) {
 		this.direccionIP = subred.getDireccion();
 		this.mascara = subred.len2int();
@@ -143,6 +145,7 @@ public class Ruta {
 		}
 	}
 
+	//Constr. mensajes entrantes
 	public Ruta(byte[] mensajeBits, int i, InetAddress direccionMensajero, int puertoMensajero) {
 		this.direccionIP = new String("/" + Byte.toUnsignedInt(mensajeBits[4 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[5 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[6 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[7 + (i * 20)]));
 		this.mascara = new String("/" + Byte.toUnsignedInt(mensajeBits[8 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[9 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[10 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[11 + (i * 20)]));

@@ -34,6 +34,7 @@ public class Rip {
 
 		/*
 		 * PENDIENTE:
+		 * arreglar tiempo
 		 * disenho correcto de la tabla por pantalla
 		 * mejoras
 		 */
@@ -81,30 +82,33 @@ public class Rip {
 		int difMiliseg = 0;
 
 		do {
-			// Mostrar tabla inicial periodicamente
 			System.out.print(ii);
 			ii++;
+			// Mostrar tabla inicial periodicamente
 			System.out.println("\nDireccion IP" + "\t\t" + "Mascara" + "\t\t\t\t" + "Siguiente salto" + "\t\t" + "Coste");
 			Set<String> setTabla = tabla.keySet();
 			Iterator<String> it = setTabla.iterator();
-			
 			while (it.hasNext()) {
 				System.out.println(tabla.get(it.next()));
 			}
 
+			//Escuchamos datagramas entrantes
 			byte[] mensajeBits = new byte[504];
 			try {
 				GregorianCalendar tiempoInicial = new GregorianCalendar();
 				long milisegInicial = tiempoInicial.getTimeInMillis();
-				if(interrumpido){ 
-					socket.setSoTimeout(difMiliseg);
+				if(interrumpido && difMiliseg != 0){ 
+					System.out.println("tiempo restante: " + (10000-difMiliseg));
+					socket.setSoTimeout((10000-difMiliseg));
 				}else{
+					System.out.println("tiempo reiniciado: 10000");
 					socket.setSoTimeout(10000);
 				}
 				interrumpido = false;
 				DatagramPacket datagrama = new DatagramPacket(mensajeBits, mensajeBits.length);
 				socket.receive(datagrama);
 
+				//Si llega un datagrama, lo procesamos
 				//Quitar cabecera
 				interrumpido = true;
 				GregorianCalendar tiempoFinal = new GregorianCalendar();
@@ -123,6 +127,7 @@ public class Rip {
 				 * }
 				 * System.out.println();
 				 */
+				
 				int i = 0;
 				while (mensajeSinCabecera[1 + (i * 20)] == 2) {
 					// Crear objeto ruta
@@ -130,6 +135,7 @@ public class Rip {
 					// Comprobar Bellman-Ford
 					if (temp.getDireccionIP().compareTo(local.getDireccion()) != 0 && temp.Bellman_Ford(tabla, temp)) {
 						// Sustituir en tabla
+						System.out.println("paso BF :" +temp.getDireccionIP() + " " + temp.getCoste());
 						tabla.put(temp.getDireccionIP(), temp);
 						// Anadir a TreeMap vecinos para poder enviar a partir de ahora
 						vecinos.put(datagrama.getAddress().toString(), new Vecino(temp.getNextHop().substring(1)+":"+datagrama.getPort()));
@@ -138,16 +144,15 @@ public class Rip {
 				}
 
 			} catch (SocketTimeoutException e) {
+				System.out.println("Se acabo el tiempo");
 				// Creamos mensaje con datos de la tabla
-				ByteBuffer bufferSalida = ByteBuffer.allocate(504); // Creo ByteBuffer de 20 bytes
+				ByteBuffer bufferSalida = ByteBuffer.allocate(504);
 
 				// Construimos cabecera
 				bufferSalida.put(Ruta.construirCabecera());
 
 				// Construimos datos
 				Iterator<String> it2 = setTabla.iterator();
-				String key = null;
-				Ruta ruta = null;
 				try {
 					while (it2.hasNext()) {
 						bufferSalida.put(Ruta.construirPaquete(tabla.get(it2.next())));
@@ -179,14 +184,12 @@ public class Rip {
 				// Enviamos a vecinos
 				Set<String> setVecinos = vecinos.keySet();
 				Iterator<String> it3 = setVecinos.iterator();
-				String key2 = null;
 				Vecino aux = null;
 				try {
 					while (it3.hasNext()) {
-						key2 = it3.next();
-						aux = vecinos.get(key2);
+						aux = vecinos.get(it3.next());
 						if (aux.getDireccion().compareTo(local.getDireccion()) != 0) {
-							System.out.println("Envio a " + aux.getDireccion());
+							System.out.println("Envio a " + aux.getDireccion() + ":" + aux.getPuerto());
 							DatagramPacket datagrama = new DatagramPacket(mensajeBits, mensajeBits.length, aux.getInet(), aux.getPuerto()); // Direccion destino y puerto destino
 							socket.send(datagrama);
 						}
