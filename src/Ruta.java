@@ -91,34 +91,34 @@ public class Ruta {
 		return cabecera;
 	}
 
-	public static ByteBuffer construirPaquete(TreeMap<String, Ruta> tabla,String dirDestino) {
+	public static ByteBuffer construirPaquete(TreeMap<String, Ruta> tabla, String dirDestino) {
 		Set<String> setTabla = tabla.keySet();
 		Iterator<String> itTabla = setTabla.iterator();
-		ByteBuffer datos = ByteBuffer.allocate(500);		
-		int i=0;
-		
-		while(itTabla.hasNext()){
+		ByteBuffer datos = ByteBuffer.allocate(500);
+		int i = 0;
+
+		while (itTabla.hasNext()) {
 			String key = itTabla.next();
-			if(tabla.get(key).getNextHop().compareTo(dirDestino) != 0){
+			if (tabla.get(key).getNextHop().compareTo(dirDestino) != 0) {
 				datos.putShort((short) 2).putShort((short) 0);
 				// Meter IP
 				String direccion = tabla.get(key).getDireccionIP().substring(1, tabla.get(key).getDireccionIP().length());
 				String[] direccionDividida = direccion.split("\\.");
 				datos.put((byte) Integer.parseInt(direccionDividida[0])).put((byte) Integer.parseInt(direccionDividida[1])).put((byte) Integer.parseInt(direccionDividida[2])).put((byte) Integer.parseInt(direccionDividida[3]));
-		
+
 				// Meter mascara
 				String mascara = tabla.get(key).getMascara().substring(1, tabla.get(key).getMascara().length());
 				String[] mascaraDividida = mascara.split("\\.");
 				datos.put((byte) Integer.parseInt(mascaraDividida[0])).put((byte) Integer.parseInt(mascaraDividida[1])).put((byte) Integer.parseInt(mascaraDividida[2])).put((byte) Integer.parseInt(mascaraDividida[3]));
-		
+
 				// Meter Next Hop
 				datos.putInt(0);
-		
+
 				// Meter Coste
 				datos.putInt(tabla.get(key).getCoste());
 			}
 		}
-		datos.rewind();		
+		datos.rewind();
 		return datos;
 	}
 
@@ -126,7 +126,7 @@ public class Ruta {
 	 * Constructores
 	 */
 
-	//Constr. vecinos fichero
+	// Constr. vecinos fichero
 	public Ruta(Vecino vecino, String tipo) {
 		this.vecino = vecino;
 		this.direccionIP = vecino.getDireccion();
@@ -140,7 +140,7 @@ public class Ruta {
 		}
 	}
 
-	//Constr. subredes fichero
+	// Constr. subredes fichero
 	public Ruta(Subred subred, String tipo) {
 		this.direccionIP = subred.getDireccion();
 		this.mascara = subred.len2int();
@@ -153,12 +153,12 @@ public class Ruta {
 		}
 	}
 
-	//Constr. mensajes entrantes
+	// Constr. mensajes entrantes
 	public Ruta(byte[] mensajeBits, int i, InetAddress direccionMensajero, int puertoMensajero) {
 		this.direccionIP = new String("/" + Byte.toUnsignedInt(mensajeBits[4 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[5 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[6 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[7 + (i * 20)]));
 		this.mascara = new String("/" + Byte.toUnsignedInt(mensajeBits[8 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[9 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[10 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[11 + (i * 20)]));
 		this.coste = 1 + (mensajeBits[19 + (i * 20)]);
 		this.nextHop = new String(direccionMensajero.toString());
-		this.vecino = new Vecino(direccionMensajero+":"+puertoMensajero);
+		this.vecino = new Vecino(direccionMensajero + ":" + puertoMensajero);
 	}
 }

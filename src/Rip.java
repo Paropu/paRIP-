@@ -1,18 +1,17 @@
+import static java.lang.Math.toIntExact;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeMap;
-import static java.lang.Math.toIntExact;
 
 public class Rip {
 	public static void main(String[] args) throws IOException {
@@ -24,17 +23,18 @@ public class Rip {
 		 * disenho correcto de la tabla por pantalla
 		 * 
 		 * Mejoras:
-		 * 	Split Horizon: No se envía las direcciones de la tabla a la dirección NextHop
-		 * 	Triggered Updates: Envío inmediato de la tabla cuando haya un cambio
+		 * Split Horizon: No se envía las direcciones de la tabla a la dirección NextHop
+		 * Triggered Updates: Envío inmediato de la tabla cuando haya un cambio
 		 */
-		
-		final String interfaz = "en0";
+
+		final String interfaz = "wlan0";
+		final int cuantaAtras = 5000;
 		TreeMap<String, Vecino> vecinos = new TreeMap<String, Vecino>();
 		TreeMap<String, Subred> subredes = new TreeMap<String, Subred>();
 		TreeMap<String, Ruta> tabla = new TreeMap<String, Ruta>();
 
 		// Creo objeto vecino con los datos del ordenador y meto en tabla
-		Vecino local = new Vecino(args,interfaz);
+		Vecino local = new Vecino(args, interfaz);
 		System.out.println(local.getDireccion()); // HERRAMIENTA: Ver IP local
 		vecinos.put(local.getDireccion(), local);
 		tabla.put(local.getDireccion(), new Ruta(local, "local")); // Anadimos IP propia a la tabla para enviar
@@ -66,7 +66,7 @@ public class Rip {
 
 		// Escuchamos datagramas
 		DatagramSocket socket = new DatagramSocket(local.getPuerto(), local.getInet());
-		int ii=0;
+		int ii = 0;
 		boolean interrumpido = false;
 		int difMiliseg = 0;
 
@@ -81,29 +81,29 @@ public class Rip {
 				System.out.println(tabla.get(it.next()));
 			}
 
-			//Escuchamos datagramas entrantes
+			// Escuchamos datagramas entrantes
 			byte[] mensajeBits = new byte[504];
 			try {
 				GregorianCalendar tiempoInicial = new GregorianCalendar();
 				long milisegInicial = tiempoInicial.getTimeInMillis();
-				if(interrumpido && difMiliseg >= 0){ 
-					System.out.println("tiempo restante: " + (5000-difMiliseg));
-					socket.setSoTimeout((5000-difMiliseg));
-				}else{
-					System.out.println("tiempo reiniciado: 5000");
-					socket.setSoTimeout(5000);
+				if (interrumpido && (difMiliseg < cuantaAtras)) {
+					System.out.println("tiempo restante: " + (cuantaAtras - difMiliseg));
+					socket.setSoTimeout((cuantaAtras - difMiliseg));
+				} else {
+					System.out.println("tiempo reiniciado: " + cuantaAtras);
+					socket.setSoTimeout(cuantaAtras);
 				}
 				interrumpido = false;
 				DatagramPacket datagrama = new DatagramPacket(mensajeBits, mensajeBits.length);
 				socket.receive(datagrama);
 
-				//Si llega un datagrama, lo procesamos
-				//Quitar cabecera
+				// Si llega un datagrama, lo procesamos
+				// Quitar cabecera
 				interrumpido = true;
 				GregorianCalendar tiempoFinal = new GregorianCalendar();
 				long milisegFinal = tiempoFinal.getTimeInMillis();
 				difMiliseg = toIntExact(milisegFinal - milisegInicial);
-				
+
 				ByteBuffer bufferSinCabecera = ByteBuffer.allocate(500);
 				bufferSinCabecera.put(mensajeBits, 4, 500); // Quitamos cabecera
 				bufferSinCabecera.rewind();
@@ -116,7 +116,7 @@ public class Rip {
 				 * }
 				 * System.out.println();
 				 */
-				
+
 				int i = 0;
 				while (mensajeSinCabecera[1 + (i * 20)] == 2) {
 					// Crear objeto ruta
@@ -124,17 +124,16 @@ public class Rip {
 					// Comprobar Bellman-Ford
 					if (temp.getDireccionIP().compareTo(local.getDireccion()) != 0 && temp.Bellman_Ford(tabla, temp)) {
 						// Sustituir en tabla
-						System.out.println("paso BF :" +temp.getDireccionIP() + " " + temp.getCoste());
+						System.out.println("paso BF :" + temp.getDireccionIP() + " " + temp.getCoste());
 						tabla.put(temp.getDireccionIP(), temp);
 						// Anadir a TreeMap vecinos para poder enviar a partir de ahora
-						vecinos.put(datagrama.getAddress().toString(), new Vecino(temp.getNextHop().substring(1)+":"+datagrama.getPort()));
+						vecinos.put(datagrama.getAddress().toString(), new Vecino(temp.getNextHop().substring(1) + ":" + datagrama.getPort()));
 					}
 					i++;
 				}
 
 			} catch (SocketTimeoutException e) {
 				System.out.println("Se acabo el tiempo");
-				
 
 				/*
 				 * // HERRAMIENTA ver bytes
@@ -157,7 +156,6 @@ public class Rip {
 				Set<String> setVecinos = vecinos.keySet();
 				Iterator<String> itVecinos = setVecinos.iterator();
 				Vecino aux = null;
-				
 
 				// Construimos datos
 				try {
@@ -167,7 +165,7 @@ public class Rip {
 						// Construimos cabecera
 						bufferSalida.put(Ruta.construirCabecera());
 						String dirDestino = itVecinos.next();
-						bufferSalida.put(Ruta.construirPaquete(tabla,vecinos.get(dirDestino).getDireccion()));
+						bufferSalida.put(Ruta.construirPaquete(tabla, vecinos.get(dirDestino).getDireccion()));
 						// Introducimos en byte[]
 						bufferSalida.rewind();
 						bufferSalida.get(mensajeBits, 0, 504);
@@ -177,7 +175,7 @@ public class Rip {
 							DatagramPacket datagrama = new DatagramPacket(mensajeBits, mensajeBits.length, aux.getInet(), aux.getPuerto()); // Direccion destino y puerto destino
 							socket.send(datagrama);
 						}
-						
+
 					}
 				} catch (Exception e2) {
 					e2.printStackTrace();
