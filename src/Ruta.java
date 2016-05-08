@@ -92,25 +92,33 @@ public class Ruta {
 	}
 
 	public static ByteBuffer construirPaquete(TreeMap<String, Ruta> tabla,String dirDestino) {
-		ByteBuffer datos = ByteBuffer.allocate(20);
-		datos.putShort((short) 2).putShort((short) 0);
+		Set<String> setTabla = tabla.keySet();
+		Iterator<String> itTabla = setTabla.iterator();
+		ByteBuffer datos = ByteBuffer.allocate(500);		
+		int i=0;
 		
-		// Meter IP
-		String direccion = ruta.getDireccionIP().substring(1, ruta.getDireccionIP().length());
-		String[] direccionDividida = direccion.split("\\.");
-		datos.put((byte) Integer.parseInt(direccionDividida[0])).put((byte) Integer.parseInt(direccionDividida[1])).put((byte) Integer.parseInt(direccionDividida[2])).put((byte) Integer.parseInt(direccionDividida[3]));
-
-		// Meter mascara
-		String mascara = ruta.getMascara().substring(1, ruta.getMascara().length());
-		String[] mascaraDividida = mascara.split("\\.");
-		datos.put((byte) Integer.parseInt(mascaraDividida[0])).put((byte) Integer.parseInt(mascaraDividida[1])).put((byte) Integer.parseInt(mascaraDividida[2])).put((byte) Integer.parseInt(mascaraDividida[3]));
-
-		// Meter Next Hop
-		datos.putInt(0);
-
-		// Meter Coste
-		datos.putInt(ruta.getCoste());
-		datos.rewind();
+		while(itTabla.hasNext()){
+			String key = itTabla.next();
+			if(tabla.get(key).getNextHop().compareTo(dirDestino) != 0){
+				datos.putShort((short) 2).putShort((short) 0);
+				// Meter IP
+				String direccion = tabla.get(key).getDireccionIP().substring(1, tabla.get(key).getDireccionIP().length());
+				String[] direccionDividida = direccion.split("\\.");
+				datos.put((byte) Integer.parseInt(direccionDividida[0])).put((byte) Integer.parseInt(direccionDividida[1])).put((byte) Integer.parseInt(direccionDividida[2])).put((byte) Integer.parseInt(direccionDividida[3]));
+		
+				// Meter mascara
+				String mascara = tabla.get(key).getMascara().substring(1, tabla.get(key).getMascara().length());
+				String[] mascaraDividida = mascara.split("\\.");
+				datos.put((byte) Integer.parseInt(mascaraDividida[0])).put((byte) Integer.parseInt(mascaraDividida[1])).put((byte) Integer.parseInt(mascaraDividida[2])).put((byte) Integer.parseInt(mascaraDividida[3]));
+		
+				// Meter Next Hop
+				datos.putInt(0);
+		
+				// Meter Coste
+				datos.putInt(tabla.get(key).getCoste());
+			}
+		}
+		datos.rewind();		
 		return datos;
 	}
 

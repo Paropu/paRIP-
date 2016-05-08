@@ -86,12 +86,12 @@ public class Rip {
 			try {
 				GregorianCalendar tiempoInicial = new GregorianCalendar();
 				long milisegInicial = tiempoInicial.getTimeInMillis();
-				if(interrumpido && difMiliseg != 0){ 
-					System.out.println("tiempo restante: " + (10000-difMiliseg));
-					socket.setSoTimeout((10000-difMiliseg));
+				if(interrumpido && difMiliseg >= 0){ 
+					System.out.println("tiempo restante: " + (5000-difMiliseg));
+					socket.setSoTimeout((5000-difMiliseg));
 				}else{
-					System.out.println("tiempo reiniciado: 10000");
-					socket.setSoTimeout(10000);
+					System.out.println("tiempo reiniciado: 5000");
+					socket.setSoTimeout(5000);
 				}
 				interrumpido = false;
 				DatagramPacket datagrama = new DatagramPacket(mensajeBits, mensajeBits.length);
@@ -155,19 +155,18 @@ public class Rip {
 
 				// Enviamos a vecinos
 				Set<String> setVecinos = vecinos.keySet();
-				Iterator<String> it3 = setVecinos.iterator();
-				Iterator<String> it2 = setTabla.iterator();
+				Iterator<String> itVecinos = setVecinos.iterator();
 				Vecino aux = null;
-				// Creamos mensaje con datos de la tabla
-				ByteBuffer bufferSalida = ByteBuffer.allocate(504);
-
-				// Construimos cabecera
-				bufferSalida.put(Ruta.construirCabecera());
+				
 
 				// Construimos datos
 				try {
-					while (it3.hasNext()) {
-						String dirDestino = it3.next();
+					while (itVecinos.hasNext()) {
+						// Creamos mensaje con datos de la tabla
+						ByteBuffer bufferSalida = ByteBuffer.allocate(504);
+						// Construimos cabecera
+						bufferSalida.put(Ruta.construirCabecera());
+						String dirDestino = itVecinos.next();
 						bufferSalida.put(Ruta.construirPaquete(tabla,vecinos.get(dirDestino).getDireccion()));
 						// Introducimos en byte[]
 						bufferSalida.rewind();
