@@ -107,7 +107,8 @@ public class Rip {
 				long milisegInicial = tiempoInicial.getTimeInMillis();
 				if (interrumpido && (difMiliseg < numeroAleatorio)) {
 					System.out.println("tiempo restante: " + (numeroAleatorio - difMiliseg));
-					socket.setSoTimeout((numeroAleatorio - difMiliseg));
+					numeroAleatorio -= difMiliseg;
+					socket.setSoTimeout(numeroAleatorio);
 				} else {
 					numeroAleatorio = (int) (Math.random()*(15000-5000+1)+5000);	//(Max-min+1)+min
 					System.out.println("tiempo reiniciado: " + numeroAleatorio);
