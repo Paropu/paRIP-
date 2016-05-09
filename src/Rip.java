@@ -79,27 +79,38 @@ public class Rip {
 		do {
 			System.out.print(ii);
 			ii++;
-			// Mostrar tabla inicial periodicamente
-			System.out.println("\nDireccion IP" + "\t\t" + "Mascara" + "\t\t\t\t" + "Siguiente salto" + "\t\t" + "Coste");
+			//Borrar entradas antiguas de la tabla
 			Set<String> setTabla = tabla.keySet();
 			Iterator<String> it = setTabla.iterator();
-			String key = null;
-			try{
-			while (it.hasNext()) {
-				key = it.next();
-				GregorianCalendar horaActual = new GregorianCalendar();
-				//Si llevamos mas de tiempoMax sin recibir esta entrada, la borramos
-				if((tabla.get(key).getTimer() != 0 && (horaActual.getTime().getTime()-tabla.get(key).getTimer()) > tiempoMax)){
-					vecinos.remove(tabla.get(key).getDireccionIP());
-					tabla.remove(key);
-				}else{
-					System.out.println(tabla.get(key));
+			boolean cambios = false;
+			while(!cambios){
+				try{
+					setTabla = tabla.keySet();
+					it = setTabla.iterator();
+					while (it.hasNext()) {
+						System.out.println(it);
+						String key = it.next();
+						GregorianCalendar horaActual = new GregorianCalendar();
+						//Si llevamos mas de tiempoMax sin recibir esta entrada, la borramos
+						if((tabla.get(key).getTimer() != 0 && (horaActual.getTime().getTime()-tabla.get(key).getTimer()) > tiempoMax && tabla.get(key).getNextHop().compareTo(local.getDireccion()) !=0)){
+							vecinos.remove(tabla.get(key).getDireccionIP());
+							tabla.remove(key);
+							cambios = false;
+							continue;
+						} 
+						cambios=true;
+					}
+				} catch(ConcurrentModificationException e3){
 				}
 			}
-			}catch(ConcurrentModificationException e3){
-				e3.fillInStackTrace();
+			
+			// Mostrar tabla inicial periodicamente
+			setTabla = tabla.keySet();
+			it = setTabla.iterator();
+			System.out.println("\nDireccion IP" + "\t\t" + "Mascara" + "\t\t\t\t" + "Siguiente salto" + "\t\t" + "Coste");
+			while (it.hasNext()) {
+				System.out.println(tabla.get(it.next()));
 			}
-
 			// Escuchamos datagramas entrantes
 			byte[] mensajeBits = new byte[504];
 			try {
