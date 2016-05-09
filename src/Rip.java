@@ -24,7 +24,12 @@ public class Rip {
 		 * HECHO --> Split Horizon: No se envía las direcciones de la tabla a la dirección NextHop
 		 * HECHO --> Triggered Updates: Envío inmediato de la tabla cuando haya un cambio
 		 * 
-		 * Dudas: Triggered update al borrar entrada de tabla?
+		 * Dudas: 
+		 * Triggered update al borrar entrada de tabla?
+		 * Triggered update subir coste a 16 y luego borrar o borrar directamente?
+		 * Enviar coste propio o el esperado?
+		 * Enviar excepcion al cambiar una linea o todos los cambios?
+		 * Enviar paquete con tamaño variables según cantidad de registros?
 		 */
 		
 		final int tiempoMax = 30000;	//tiempo maximo hasta borrar entrada de tabla
