@@ -1,0 +1,11 @@
+He implementado que todo funcione correctamente si el archivo de algún router no posee ninguna entrada
+
+Por ejemplo: A — B — C
+Tabla de A: B
+Tabla de B: C
+Tabla de C: vacía
+
+- Comenzamos encendiendo B y C: B enviará su vector a C y C añadirá su dirección y le devolverá el suyo
+- A continuación iniciamos A, que se comunicará con B, y este con C y pronto convergerán las tres tablas.
+- Ahora apagamos B, pasado el tiempo estimado A pondrá a B y C con coste 16 y C hará lo equivalente.
+- Pero tras llegar al momento de borrar la entrada de la tabla, A y C borrarán las dos entradas de su tabla, y si B vuelve a aparecer sin especificar la dirección de A, A quedará desconectado de la red hasta que se reinicie.

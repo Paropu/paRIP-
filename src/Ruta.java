@@ -46,6 +46,10 @@ public class Ruta {
 		return this.coste;
 	}
 	
+	public void setCoste(Integer coste){
+		this.coste = coste;
+	}
+	
 	public long getTimer(){
 		return this.timer;
 	}

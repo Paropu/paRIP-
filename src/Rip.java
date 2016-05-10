@@ -18,24 +18,26 @@ public class Rip {
 
 		/*
 		 * PENDIENTE:
-		 * Arreglar vuelve a aparecer un nodo caido
+		 * triggered updates enviar solo cambios
+		 * el tamaño del paquete es variable
+		 * 
 		 * disenho correcto de la tabla por pantalla
-		 * Variable global media y varianza para el tiempo medio de envio
+		 * no mostrar propia direccion en tabla
+		 * Hacer archivo de texto con mejoras
 		 * 
 		 * Mejoras:
 		 * HECHO --> Split Horizon: No se envía las direcciones de la tabla a la dirección NextHop
 		 * HECHO --> Triggered Updates: Envío inmediato de la tabla cuando haya un cambio
-		 * 
-		 * Dudas: 
-		 * Triggered update al borrar entrada de tabla?
-		 * Triggered update subir coste a 16 y luego borrar o borrar directamente?
-		 * Enviar coste propio o el esperado?
-		 * Triggered update al cambiar una linea o todos los cambios?
-		 * Enviar paquete con tamaño variables según cantidad de registros?
+		 * Un nodo puede tener el fichero vacio al inicio
 		 */
 		
-		final int tiempoMax = 20000;	//tiempo maximo hasta borrar entrada de tabla
+		final int tiempoSubirCoste = 20*1000;	//tiempo para ponerle coste infinito a una entrada de la tabla
+		final int tiempoEliminar = 30*1000;		//tiempo para eliminar entrada de la tabla
+		int tiempoMedioEnvio = 10*1000;	//tiempo medio de envio
+		int varianzaEnvio = 2*1000;	//tiempo de envio comprendido entre (tiempoMedioEnvio+-varianzaEnvio)
 		final String interfaz = "wlan0";	//nombre de interfaz donde obtener IP por defecto
+		
+		
 		TreeMap<String, Vecino> vecinos = new TreeMap<String, Vecino>();
 		TreeMap<String, Subred> subredes = new TreeMap<String, Subred>();
 		TreeMap<String, Ruta> tabla = new TreeMap<String, Ruta>();
@@ -82,10 +84,10 @@ public class Rip {
 			System.out.print(ii);
 			ii++;
 			
-			//Borrar entradas antiguas de la tabla
+			//Subir coste o borrar entradas antiguas de la tabla
 			Set<String> setTabla = tabla.keySet();
 			Iterator<String> it = setTabla.iterator();
-			boolean borrado = true;
+			boolean borrado = true;	//Variable para volver a inicializar set e iterator si borramos alguna entrada de la tabla
 			boolean cambiosEnTabla = false;
 			while(borrado){
 				try{
@@ -94,11 +96,16 @@ public class Rip {
 					while (it.hasNext()) {
 						String key = it.next();
 						GregorianCalendar horaActual = new GregorianCalendar();
-						//Si llevamos mas de tiempoMax sin recibir esta entrada, la borramos
-						if((tabla.get(key).getTimer() != 0 && (horaActual.getTime().getTime()-tabla.get(key).getTimer()) > tiempoMax && tabla.get(key).getNextHop().compareTo(local.getDireccion()) !=0)){
+						//Si llevamos mas de tiempoEliminar sin recibir esta entrada, la borramos
+						if((tabla.get(key).getCoste() >= 16 && (horaActual.getTime().getTime()-tabla.get(key).getTimer()) > tiempoEliminar && tabla.get(key).getNextHop().compareTo(local.getDireccion()) !=0)){
 							vecinos.remove(tabla.get(key).getDireccionIP());
 							tabla.remove(key);
 							borrado = true;
+							continue;
+						}
+						//Si llevamos mas de tiempoSubirCoste sin recibir esta entrada, subimos coste a 16
+						if((tabla.get(key).getTimer() != 0 && (horaActual.getTime().getTime()-tabla.get(key).getTimer()) > tiempoSubirCoste && tabla.get(key).getNextHop().compareTo(local.getDireccion()) !=0)){
+							tabla.get(key).setCoste(16);;
 							cambiosEnTabla = true; //Triggered updates
 							continue;
 						} 
@@ -125,7 +132,7 @@ public class Rip {
 					numeroAleatorio -= difMiliseg;
 					socket.setSoTimeout(numeroAleatorio);
 				} else {
-					numeroAleatorio = (int) (Math.random()*(12000-8000+1)+8000);	//(Max-min+1)+min
+					numeroAleatorio = (int) (Math.random()*((tiempoMedioEnvio+varianzaEnvio)-(tiempoMedioEnvio-varianzaEnvio)+1)+(tiempoMedioEnvio-varianzaEnvio));	//(Max-min+1)+min
 					System.out.println("tiempo reiniciado: " + numeroAleatorio);
 					socket.setSoTimeout(numeroAleatorio);
 				}
