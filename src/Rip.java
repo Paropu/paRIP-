@@ -16,24 +16,11 @@ import java.util.TreeMap;
 public class Rip {
 	public static void main(String[] args) throws IOException {
 
-		/*
-		 * PENDIENTE:
-		 * triggered updates enviar solo cambios
-		 * 
-		 * no mostrar propia direccion en tabla
-		 * Hacer archivo de texto con mejoras
-		 * 
-		 * Mejoras:
-		 * HECHO --> Split Horizon: No se envía las direcciones de la tabla a la dirección NextHop
-		 * HECHO --> Triggered Updates: Envío inmediato de la tabla cuando haya un cambio
-		 * Un nodo puede tener el fichero vacio al inicio
-		 */
-		
 		final int tiempoSubirCoste = 20*1000;	//tiempo para ponerle coste infinito a una entrada de la tabla
 		final int tiempoEliminar = 30*1000;		//tiempo para eliminar entrada de la tabla
-		int tiempoMedioEnvio = 5*1000;	//tiempo medio de envio
-		int varianzaEnvio = 1*1000;	//tiempo de envio comprendido entre (tiempoMedioEnvio+-varianzaEnvio)
-		final String interfaz = "eth0";	//nombre de interfaz donde obtener IP por defecto
+		int tiempoMedioEnvio = 5*1000;			//tiempo medio de envio
+		int varianzaEnvio = 1*1000;				//tiempo de envio comprendido entre (tiempoMedioEnvio+-varianzaEnvio)
+		final String interfaz = "eth0";			//nombre de interfaz donde obtener IP por defecto
 		
 		
 		TreeMap<String, Vecino> vecinos = new TreeMap<String, Vecino>();
@@ -120,9 +107,12 @@ public class Rip {
 			// Mostrar tabla inicial periodicamente
 			setTabla = tabla.keySet();
 			it = setTabla.iterator();
+			String key2 = null;
 			System.out.println("\nDireccion IP" + "\t" + "Mascara" + "\t\t\t" + "Siguiente salto" + "\t" + "Coste" + "\t" + "tiempo");
 			while (it.hasNext()) {
-				System.out.println(tabla.get(it.next()));
+				key2 = it.next();
+				if(tabla.get(key2).getDireccionIP().compareTo(local.getDireccion())!=0)
+					System.out.println(tabla.get(key2));
 			}
 			// Escuchamos datagramas entrantes
 			byte[] mensajeBits = new byte[504];
