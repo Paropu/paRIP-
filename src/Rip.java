@@ -1,5 +1,4 @@
 import static java.lang.Math.toIntExact;
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -27,16 +26,16 @@ public class Rip {
 		 * Asigno coste infinito al cabo de 30 segundos y borro de la tabla tras 60 segundos
 		 */
 
-		int tiempoSubirCoste = 30 * 1000; // tiempo para coste infinito a una entrada de la tabla
-		int tiempoEliminar = 60 * 1000; // tiempo eliminar entrada de la tabla
+		int tiempoSubirCoste = 30 * 1000; 		// tiempo para coste infinito a una entrada de la tabla
+		int tiempoEliminar = 60 * 1000; 		// tiempo eliminar entrada de la tabla
 		int tiempoMedioEnvio = 10 * 1000;
-		int varianzaEnvio = 2 * 1000; // tiempo de espera entre (tiempoMedioEnvio+-varianzaEnvio)
-		String interfaz = "eth0"; // nombre de interfaz IP por defecto
+		int varianzaEnvio = 2 * 1000; 			// tiempo de espera entre (tiempoMedioEnvio+-varianzaEnvio)
+		String interfaz = "eth0"; 				// nombre de interfaz IP por defecto
 
-		TreeMap<String, Vecino> vecinos = new TreeMap<String, Vecino>(); // vecinos (Coste 1)
-		TreeMap<String, Subred> subredes = new TreeMap<String, Subred>(); // subredes (Coste 1)
-		TreeMap<String, Ruta> tabla = new TreeMap<String, Ruta>(); // datos de la tabla
-		TreeMap<String, Ruta> cambios = new TreeMap<String, Ruta>(); // Triggered Updates
+		TreeMap<String, Vecino> vecinos = new TreeMap<String, Vecino>(); 	// vecinos (Coste 1)
+		TreeMap<String, Subred> subredes = new TreeMap<String, Subred>(); 	// subredes (Coste 1)
+		TreeMap<String, Ruta> tabla = new TreeMap<String, Ruta>();		 	// datos de la tabla
+		TreeMap<String, Ruta> cambios = new TreeMap<String, Ruta>(); 		// Triggered Updates
 
 		// Creo objeto vecino con los datos del ordenador y meto en tabla
 		Vecino local = new Vecino(args, interfaz);
@@ -70,10 +69,10 @@ public class Rip {
 		entrada.close();
 
 		DatagramSocket socket = new DatagramSocket(local.getPuerto(), local.getInet());
-		boolean cambiosEnTabla = false; // Triggered Updates
-		boolean interrumpido = false; // true si entró un datagrama durante el tiempo de espera
-		int difMiliseg = 0; // In. tiempo entre crear DatagramPacket y recibir
-		int numeroAleatorio = 0; // In. tiempo de espera
+		boolean cambiosEnTabla = false; 	// Triggered Updates
+		boolean interrumpido = false; 		// true si entró un datagrama durante el tiempo de espera
+		int difMiliseg = 0; 				// In. tiempo entre crear DatagramPacket y recibir
+		int numeroAleatorio = 0; 			// In. tiempo de espera
 
 		// Inicio de bucle infinito
 		do {
@@ -148,8 +147,8 @@ public class Rip {
 				// Quitar cabecera
 				interrumpido = true;
 				GregorianCalendar tiempoFinal = new GregorianCalendar();
-				long milisegFinal = tiempoFinal.getTimeInMillis(); // Guardamos tiempo de llegada
-				difMiliseg = toIntExact(milisegFinal - milisegInicial); // Calculamos tiempo escuchando
+				long milisegFinal = tiempoFinal.getTimeInMillis(); 			// Guardamos tiempo de llegada
+				difMiliseg = toIntExact(milisegFinal - milisegInicial); 	// Calculamos tiempo escuchando
 
 				ByteBuffer bufferSinCabecera = ByteBuffer.allocate(500);
 				bufferSinCabecera.put(mensajeBits, 4, 500); // Quitamos cabecera
