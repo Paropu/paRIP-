@@ -3,11 +3,13 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
 
+/**
+ * Clase con los atributos, metodos y constructores para trabajar con los routers que están a distancia 1
+ *
+ */
 public class Vecino {
 	private String direccionIP;
 	private Integer puerto;
-
-	// Se puede modificar toString() si queremos
 
 	public String getDireccion() {
 		return this.direccionIP;
@@ -26,7 +28,7 @@ public class Vecino {
 	}
 
 	/**
-	 * 
+	 * Devuelve la direccion IPv4 de la interfaz introducida
 	 * @return IP de interfaz introducida
 	 */
 	public String getDireccionETH0(String interfaz) {
@@ -56,7 +58,7 @@ public class Vecino {
 	}
 
 	/**
-	 * 
+	 * Devuelve InetAddress del String introducido
 	 * @return direccion IP en forma Inetaddress
 	 */
 	public InetAddress getInet() {
@@ -67,10 +69,15 @@ public class Vecino {
 		}
 		return addr;
 	}
-
-	public Vecino(String[] args,String interfaz) { // Constructor local
+	
+	/**
+	 * Contructor de objeto Vecino para los datos del propio ordenador
+	 * @param args
+	 * @param interfaz
+	 */
+	public Vecino(String[] args,String interfaz) { 
 		if (args.length == 0) { // Si no tiene datos de entrada
-			this.direccionIP = this.getDireccionETH0(interfaz); // Obtiene y asigna la direccion IP del puerto "eth0"
+			this.direccionIP = this.getDireccionETH0(interfaz); // Obtiene y asigna la direccion IP del puerto dado
 			this.puerto = 5512;
 		} else {
 			String[] entrada = args[0].split(":");
@@ -86,8 +93,12 @@ public class Vecino {
 			}
 		}
 	}
-
-	public Vecino(String vecino) { // Constructor para vecinos del archivo
+	
+	/**
+	 * Constructor para vecinos del archivo
+	 * @param vecino
+	 */
+	public Vecino(String vecino) {
 		String[] separar = vecino.split(":");
 		this.direccionIP = "/" + separar[0];
 		if (separar.length == 2) {
@@ -96,7 +107,11 @@ public class Vecino {
 			this.puerto = 5512;
 		}
 	}
-
+	
+	/**
+	 * Constructor para vecinos recibidos que no están originalmente en el archivo
+	 * @param ruta
+	 */
 	public Vecino(Ruta ruta) {
 		this.setDireccion(ruta.getDireccionIP());
 		this.setPuerto(ruta.getVecino().getPuerto());

@@ -1,10 +1,13 @@
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
-import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeMap;
 
+/**
+ * Clase con los atributos, metodos y constructores para trabajar con datos de la tabla de encaminamiento
+ *
+ */
 public class Ruta {
 
 	private Vecino vecino;
@@ -13,16 +16,13 @@ public class Ruta {
 	private Integer len;
 	private String nextHop;
 	private Integer coste;
-	private long timer;
+	private long timer;		//tiempo transcurrido desde la llegada del paquete
 
-	@Override
 	public String toString() {
-		GregorianCalendar tiempoInicial = new GregorianCalendar();
-		long milisegInicial = tiempoInicial.getTimeInMillis();
 		if(this.getMascara().length()>14){
-			return this.getDireccionIP() + "\t" + this.getMascara() + "\t" + this.nextHop + "\t" + this.coste + "\t" + (milisegInicial-this.timer);
+			return this.getDireccionIP() + "\t" + this.getMascara() + "\t" + this.nextHop + "\t\t" + this.coste;
 		} else {
-			return this.getDireccionIP() + "\t" + this.getMascara() + "\t\t" + this.nextHop + "\t" + this.coste + "\t" + (milisegInicial-this.timer);
+			return this.getDireccionIP() + "\t" + this.getMascara() + "\t\t" + this.nextHop + "\t\t" + this.coste;
 		}
 	}
 
@@ -57,7 +57,13 @@ public class Ruta {
 	public long getTimer(){
 		return this.timer;
 	}
-
+	
+	/**
+	 * Devuelve true si la Ruta introducida cumple lo necesario para ser añadida o actualizada en la tabla
+	 * @param tabla TreeMap con todos los datos de la tabla
+	 * @param rutaNueva objeto Ruta con datos recibidos
+	 * @return true si hay que añadir rutaNueva a la tabla
+	 */
 	public Boolean Bellman_Ford(TreeMap<String, Ruta> tabla, Ruta rutaNueva) {
 		Set<String> setTabla = tabla.keySet();
 		Iterator<String> it = setTabla.iterator();
@@ -91,6 +97,12 @@ public class Ruta {
 		return false;
 	}
 	
+	/**
+	 * Actualiza el atributo timer de las entradas de la tabla que acaban de llegar de nuevo
+	 * @param tabla
+	 * @param rutaNueva
+	 * @return
+	 */
 	public Boolean actualizarTimer(TreeMap<String, Ruta> tabla, Ruta rutaNueva) {
 		Set<String> setTabla = tabla.keySet();
 		Iterator<String> it = setTabla.iterator();
@@ -111,6 +123,10 @@ public class Ruta {
 		return false;
 	}
 
+	/**
+	 * Devuelve la cabecera del formato RIPv2
+	 * @return
+	 */
 	public static ByteBuffer construirCabecera() {
 		ByteBuffer cabecera = ByteBuffer.allocate(4);
 		cabecera.put((byte) 2).put((byte) 2);
@@ -118,6 +134,12 @@ public class Ruta {
 		return cabecera;
 	}
 
+	/**
+	 * Devuelve los campos de datos para enviar con el formato y tamaño correctos 
+	 * @param tabla
+	 * @param dirDestino
+	 * @return
+	 */
 	public static ByteBuffer construirPaquete(TreeMap<String, Ruta> tabla, String dirDestino) {
 		Set<String> setTabla = tabla.keySet();
 		Iterator<String> itTabla = setTabla.iterator();
@@ -156,6 +178,12 @@ public class Ruta {
 		return datosSalida;
 	}
 	
+	/**
+	 * Calcula el tamaño que debe de tener el paquete
+	 * @param tabla
+	 * @param dirDestino
+	 * @return
+	 */
 	public static int averiguarTamanho(TreeMap<String, Ruta> tabla, String dirDestino){
 		Set<String> setTabla = tabla.keySet();
 		Iterator<String> itTabla = setTabla.iterator();
@@ -174,7 +202,11 @@ public class Ruta {
 	 * Constructores
 	 */
 
-	// Constr. vecinos fichero
+	/**
+	 * Constructor de vecinos del fichero para añadir a tabla
+	 * @param vecino
+	 * @param tipo
+	 */
 	public Ruta(Vecino vecino, String tipo) {
 		this.vecino = vecino;
 		this.direccionIP = vecino.getDireccion();
@@ -189,7 +221,11 @@ public class Ruta {
 		}
 	}
 
-	// Constr. subredes fichero
+	/**
+	 * Constructor de subredes del fichero para añadir a tabla
+	 * @param subred
+	 * @param tipo
+	 */
 	public Ruta(Subred subred, String tipo) {
 		this.direccionIP = subred.getDireccion();
 		this.mascara = subred.len2int();
@@ -203,7 +239,14 @@ public class Ruta {
 		}
 	}
 
-	// Constr. mensajes entrantes
+	/**
+	 * Constructor con la informacion de los mensajes entrantes
+	 * @param mensajeBits datagrama de entrada
+	 * @param i contador de que registro se debe tratar esta vez
+	 * @param direccionMensajero direccion IP del vecino que lo ha enviado
+	 * @param puertoMensajero puerto del vecino que lo ha enviado
+	 * @param timer
+	 */
 	public Ruta(byte[] mensajeBits, int i, InetAddress direccionMensajero, int puertoMensajero,long timer) {
 		this.direccionIP = new String("/" + Byte.toUnsignedInt(mensajeBits[4 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[5 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[6 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[7 + (i * 20)]));
 		this.mascara = new String("/" + Byte.toUnsignedInt(mensajeBits[8 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[9 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[10 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[11 + (i * 20)]));

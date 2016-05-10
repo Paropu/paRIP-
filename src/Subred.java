@@ -1,4 +1,8 @@
 
+/**
+ * Clase con los atributos, metodos y constructores para trabajar con las subredes que están a distancia 1
+ *
+ */
 public class Subred {
 	private String direccionIP;
 	private String len;
@@ -20,13 +24,16 @@ public class Subred {
 	}
 
 	/**
-	 * Transforma int /25 en String mascara 255.255.255.128
-	 * @return
+	 * Transforma numero entero en String A.B.C.D
+	 * @return String con la mascara en el formato A.B.C.D
 	 */
-
 	public String len2int() {
 		int unos = Integer.parseInt(this.len);
 		String mascara = "/";
+		if(unos>32) {
+			System.out.println("ERROR en formato de mascara");
+			System.exit(0);
+		}
 		for (int i = 4; i != 0; i--) {
 			if (unos >= 8) {
 				mascara = mascara.concat("255.");
@@ -76,7 +83,10 @@ public class Subred {
 		return mascara;
 	}
 
-	// Constructor para subredes del fichero
+	/**
+	 * Constructor para subredes del fichero
+	 * @param subred
+	 */
 	public Subred(String subred) {
 		String[] separar = subred.split("/");
 		this.direccionIP = "/" + separar[0];
