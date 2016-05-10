@@ -18,7 +18,9 @@ public class Rip {
 
 		/*
 		 * PENDIENTE:
+		 * Arreglar vuelve a aparecer un nodo caido
 		 * disenho correcto de la tabla por pantalla
+		 * Variable global media y varianza para el tiempo medio de envio
 		 * 
 		 * Mejoras:
 		 * HECHO --> Split Horizon: No se envía las direcciones de la tabla a la dirección NextHop
@@ -28,11 +30,11 @@ public class Rip {
 		 * Triggered update al borrar entrada de tabla?
 		 * Triggered update subir coste a 16 y luego borrar o borrar directamente?
 		 * Enviar coste propio o el esperado?
-		 * Enviar excepcion al cambiar una linea o todos los cambios?
+		 * Triggered update al cambiar una linea o todos los cambios?
 		 * Enviar paquete con tamaño variables según cantidad de registros?
 		 */
 		
-		final int tiempoMax = 30000;	//tiempo maximo hasta borrar entrada de tabla
+		final int tiempoMax = 20000;	//tiempo maximo hasta borrar entrada de tabla
 		final String interfaz = "wlan0";	//nombre de interfaz donde obtener IP por defecto
 		TreeMap<String, Vecino> vecinos = new TreeMap<String, Vecino>();
 		TreeMap<String, Subred> subredes = new TreeMap<String, Subred>();
@@ -79,26 +81,28 @@ public class Rip {
 		do {
 			System.out.print(ii);
 			ii++;
+			
 			//Borrar entradas antiguas de la tabla
 			Set<String> setTabla = tabla.keySet();
 			Iterator<String> it = setTabla.iterator();
-			boolean cambios = false;
-			while(!cambios){
+			boolean borrado = true;
+			boolean cambiosEnTabla = false;
+			while(borrado){
 				try{
 					setTabla = tabla.keySet();
 					it = setTabla.iterator();
 					while (it.hasNext()) {
-						System.out.println(it);
 						String key = it.next();
 						GregorianCalendar horaActual = new GregorianCalendar();
 						//Si llevamos mas de tiempoMax sin recibir esta entrada, la borramos
 						if((tabla.get(key).getTimer() != 0 && (horaActual.getTime().getTime()-tabla.get(key).getTimer()) > tiempoMax && tabla.get(key).getNextHop().compareTo(local.getDireccion()) !=0)){
 							vecinos.remove(tabla.get(key).getDireccionIP());
 							tabla.remove(key);
-							cambios = false;
+							borrado = true;
+							cambiosEnTabla = true; //Triggered updates
 							continue;
 						} 
-						cambios=true;
+						borrado=false;
 					}
 				} catch(ConcurrentModificationException e3){
 				}
@@ -107,7 +111,7 @@ public class Rip {
 			// Mostrar tabla inicial periodicamente
 			setTabla = tabla.keySet();
 			it = setTabla.iterator();
-			System.out.println("\nDireccion IP" + "\t\t" + "Mascara" + "\t\t\t\t" + "Siguiente salto" + "\t\t" + "Coste");
+			System.out.println("\nDireccion IP" + "\t" + "Mascara" + "\t\t\t" + "Siguiente salto" + "\t" + "Coste" + "\t" + "tiempo");
 			while (it.hasNext()) {
 				System.out.println(tabla.get(it.next()));
 			}
@@ -121,7 +125,7 @@ public class Rip {
 					numeroAleatorio -= difMiliseg;
 					socket.setSoTimeout(numeroAleatorio);
 				} else {
-					numeroAleatorio = (int) (Math.random()*(15000-5000+1)+5000);	//(Max-min+1)+min
+					numeroAleatorio = (int) (Math.random()*(12000-8000+1)+8000);	//(Max-min+1)+min
 					System.out.println("tiempo reiniciado: " + numeroAleatorio);
 					socket.setSoTimeout(numeroAleatorio);
 				}
@@ -147,6 +151,10 @@ public class Rip {
 					// Crear objeto ruta
 					GregorianCalendar horaRecibido = new GregorianCalendar();
 					Ruta temp = new Ruta(mensajeSinCabecera, i, datagrama.getAddress(), datagrama.getPort(),horaRecibido.getTime().getTime());
+					// Actualizar timer
+					if(temp.actualizarTimer(tabla,temp)){
+						tabla.put(temp.getDireccionIP(), temp);
+					}
 					// Comprobar Bellman-Ford
 					if (temp.getDireccionIP().compareTo(local.getDireccion()) != 0 && temp.Bellman_Ford(tabla, temp)) {
 						// Sustituir en tabla
@@ -154,10 +162,11 @@ public class Rip {
 						tabla.put(temp.getDireccionIP(), temp);
 						// Anadir a TreeMap vecinos para poder enviar a partir de ahora
 						vecinos.put(datagrama.getAddress().toString(), new Vecino(temp.getNextHop().substring(1) + ":" + datagrama.getPort()));
-						throw new SocketTimeoutException();
+						cambiosEnTabla = true;
 					}
 					i++;
 				}
+				if(cambiosEnTabla)throw new SocketTimeoutException();
 
 			} catch (SocketTimeoutException e) {
 				System.out.println("Se acabo el tiempo");

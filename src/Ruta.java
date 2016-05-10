@@ -17,7 +17,9 @@ public class Ruta {
 
 	@Override
 	public String toString() {
-		return this.getDireccionIP() + "\t\t" + this.getMascara() + "\t\t" + this.nextHop + "\t\t" + this.coste;
+		GregorianCalendar tiempoInicial = new GregorianCalendar();
+		long milisegInicial = tiempoInicial.getTimeInMillis();
+		return this.getDireccionIP() + "\t" + this.getMascara() + "\t" + this.nextHop + "\t" + this.coste + "\t" + (milisegInicial-this.timer);
 	}
 
 	public Vecino getVecino() {
@@ -59,10 +61,10 @@ public class Ruta {
 
 			if (rutaTabla.getDireccionIP().compareTo(rutaNueva.getDireccionIP()) == 0) {
 				existeEnTabla = true;
-
-				if (rutaTabla.getCoste() == rutaNueva.getCoste())
+				if (rutaTabla.getCoste() == rutaNueva.getCoste()){
 					return false;
-
+				}
+				
 				// Comprobar si en la tabla tenemos esa direccion con mayor coste
 				if (rutaTabla.getCoste() > rutaNueva.getCoste()) {
 					return true;
@@ -78,6 +80,26 @@ public class Ruta {
 			return true;
 		}
 		// Si no se cumplen
+		return false;
+	}
+	
+	public Boolean actualizarTimer(TreeMap<String, Ruta> tabla, Ruta rutaNueva) {
+		Set<String> setTabla = tabla.keySet();
+		Iterator<String> it = setTabla.iterator();
+		Ruta rutaTabla = null;		
+		while (it.hasNext()) {
+			rutaTabla = tabla.get(it.next());
+
+			if (rutaTabla.getDireccionIP().compareTo(rutaNueva.getDireccionIP()) == 0) {
+				if (rutaTabla.getCoste() == rutaNueva.getCoste()){
+					if(rutaTabla.getNextHop().compareTo(rutaNueva.getNextHop()) == 0 && rutaTabla.getTimer() < rutaNueva.getTimer()){
+						return true;
+					} else {
+						return false;
+					}
+				}
+			}
+		}
 		return false;
 	}
 
@@ -130,6 +152,7 @@ public class Ruta {
 		this.mascara = "/255.255.255.255";
 		this.len = 32;
 		this.nextHop = vecino.getDireccion();
+		this.timer=0;
 		if (tipo.contains("local")) {
 			this.coste = 0;
 		} else {
@@ -143,6 +166,7 @@ public class Ruta {
 		this.mascara = subred.len2int();
 		this.len = Integer.parseInt(subred.getLen());
 		this.nextHop = subred.getDireccion();
+		this.timer = 0;
 		if (tipo.contains("local")) {
 			this.coste = 0;
 		} else {
