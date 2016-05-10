@@ -20,7 +20,6 @@ public class Rip {
 		 * PENDIENTE:
 		 * triggered updates enviar solo cambios
 		 * 
-		 * disenho correcto de la tabla por pantalla
 		 * no mostrar propia direccion en tabla
 		 * Hacer archivo de texto con mejoras
 		 * 
@@ -40,6 +39,7 @@ public class Rip {
 		TreeMap<String, Vecino> vecinos = new TreeMap<String, Vecino>();
 		TreeMap<String, Subred> subredes = new TreeMap<String, Subred>();
 		TreeMap<String, Ruta> tabla = new TreeMap<String, Ruta>();
+		TreeMap<String, Ruta> cambios = new TreeMap<String, Ruta>();
 
 		// Creo objeto vecino con los datos del ordenador y meto en tabla
 		Vecino local = new Vecino(args, interfaz);
@@ -74,12 +74,14 @@ public class Rip {
 
 		// Escuchamos datagramas
 		DatagramSocket socket = new DatagramSocket(local.getPuerto(), local.getInet());
+		boolean cambiosEnTabla = false;
 		int ii = 0;
 		boolean interrumpido = false;
 		int difMiliseg = 0;
 		int numeroAleatorio = 0;
 
 		do {
+			cambios.clear();
 			System.out.print(ii);
 			ii++;
 			
@@ -87,7 +89,7 @@ public class Rip {
 			Set<String> setTabla = tabla.keySet();
 			Iterator<String> it = setTabla.iterator();
 			boolean borrado = true;	//Variable para volver a inicializar set e iterator si borramos alguna entrada de la tabla
-			boolean cambiosEnTabla = false;
+			cambiosEnTabla = false;
 			while(borrado){
 				try{
 					setTabla = tabla.keySet();
@@ -104,7 +106,8 @@ public class Rip {
 						}
 						//Si llevamos mas de tiempoSubirCoste sin recibir esta entrada, subimos coste a 16
 						if((tabla.get(key).getTimer() != 0 && (horaActual.getTime().getTime()-tabla.get(key).getTimer()) > tiempoSubirCoste && tabla.get(key).getNextHop().compareTo(local.getDireccion()) !=0)){
-							tabla.get(key).setCoste(16);;
+							tabla.get(key).setCoste(16);
+							cambios.put(tabla.get(key).getDireccionIP(), tabla.get(key));
 							cambiosEnTabla = true; //Triggered updates
 							continue;
 						} 
@@ -127,8 +130,8 @@ public class Rip {
 				GregorianCalendar tiempoInicial = new GregorianCalendar();
 				long milisegInicial = tiempoInicial.getTimeInMillis();
 				if (interrumpido && (difMiliseg < numeroAleatorio)) {
-					System.out.println("tiempo restante: " + (numeroAleatorio - difMiliseg));
 					numeroAleatorio -= difMiliseg;
+					System.out.println("tiempo restante: " + numeroAleatorio);
 					socket.setSoTimeout(numeroAleatorio);
 				} else {
 					numeroAleatorio = (int) (Math.random()*((tiempoMedioEnvio+varianzaEnvio)-(tiempoMedioEnvio-varianzaEnvio)+1)+(tiempoMedioEnvio-varianzaEnvio));	//(Max-min+1)+min
@@ -153,7 +156,7 @@ public class Rip {
 				bufferSinCabecera.get(mensajeSinCabecera);
 
 				int i = 0;
-				while (mensajeSinCabecera[1 + (i * 20)] == 2) {
+				while (mensajeSinCabecera[1 + (i * 20)] == 2 || i == 24) {
 					// Crear objeto ruta
 					GregorianCalendar horaRecibido = new GregorianCalendar();
 					Ruta temp = new Ruta(mensajeSinCabecera, i, datagrama.getAddress(), datagrama.getPort(),horaRecibido.getTime().getTime());
@@ -166,6 +169,7 @@ public class Rip {
 						// Sustituir en tabla
 						System.out.println("paso BF :" + temp.getDireccionIP() + " " + temp.getCoste());
 						tabla.put(temp.getDireccionIP(), temp);
+						cambios.put(temp.getDireccionIP(), temp);
 						// Anadir a TreeMap vecinos para poder enviar a partir de ahora
 						vecinos.put(datagrama.getAddress().toString(), new Vecino(temp.getNextHop().substring(1) + ":" + datagrama.getPort()));
 						cambiosEnTabla = true;
@@ -176,7 +180,10 @@ public class Rip {
 
 			} catch (SocketTimeoutException e) {
 				System.out.println("Se acabo el tiempo");
+				
+				
 
+				
 				// Enviamos a vecinos
 				Set<String> setVecinos = vecinos.keySet();
 				Iterator<String> itVecinos = setVecinos.iterator();
@@ -188,7 +195,12 @@ public class Rip {
 					while (itVecinos.hasNext()) {
 						String dirDestino = itVecinos.next();
 						// Creamos mensaje con datos de la tabla
-						int tamanho = Ruta.averiguarTamanho(tabla, vecinos.get(dirDestino).getDireccion());//Calculamos tamanho de envio
+						int tamanho = 0;
+						if(cambiosEnTabla){
+							 tamanho = Ruta.averiguarTamanho(cambios, vecinos.get(dirDestino).getDireccion());//Calculamos tamanho de envio
+						} else{
+							 tamanho = Ruta.averiguarTamanho(tabla, vecinos.get(dirDestino).getDireccion());//Calculamos tamanho de envio
+						}
 						if(tamanho > 504){
 							tamanho =504;
 						}
@@ -198,7 +210,11 @@ public class Rip {
 						// Construimos cabecera
 						bufferSalida.put(Ruta.construirCabecera());
 						// 
-						bufferSalida.put(Ruta.construirPaquete(tabla, vecinos.get(dirDestino).getDireccion()));
+						if(cambiosEnTabla){
+							bufferSalida.put(Ruta.construirPaquete(cambios, vecinos.get(dirDestino).getDireccion()));
+						} else {
+							bufferSalida.put(Ruta.construirPaquete(tabla, vecinos.get(dirDestino).getDireccion()));
+						}
 						// Introducimos en byte[]
 						bufferSalida.rewind();
 						bufferSalida.get(mensajeEnvioBits, 0, tamanho);
