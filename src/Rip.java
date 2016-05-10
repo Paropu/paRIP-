@@ -19,7 +19,6 @@ public class Rip {
 		/*
 		 * PENDIENTE:
 		 * triggered updates enviar solo cambios
-		 * el tamaño del paquete es variable
 		 * 
 		 * disenho correcto de la tabla por pantalla
 		 * no mostrar propia direccion en tabla
@@ -33,9 +32,9 @@ public class Rip {
 		
 		final int tiempoSubirCoste = 20*1000;	//tiempo para ponerle coste infinito a una entrada de la tabla
 		final int tiempoEliminar = 30*1000;		//tiempo para eliminar entrada de la tabla
-		int tiempoMedioEnvio = 10*1000;	//tiempo medio de envio
-		int varianzaEnvio = 2*1000;	//tiempo de envio comprendido entre (tiempoMedioEnvio+-varianzaEnvio)
-		final String interfaz = "wlan0";	//nombre de interfaz donde obtener IP por defecto
+		int tiempoMedioEnvio = 5*1000;	//tiempo medio de envio
+		int varianzaEnvio = 1*1000;	//tiempo de envio comprendido entre (tiempoMedioEnvio+-varianzaEnvio)
+		final String interfaz = "eth0";	//nombre de interfaz donde obtener IP por defecto
 		
 		
 		TreeMap<String, Vecino> vecinos = new TreeMap<String, Vecino>();
@@ -78,7 +77,7 @@ public class Rip {
 		int ii = 0;
 		boolean interrumpido = false;
 		int difMiliseg = 0;
-		int numeroAleatorio = 10000;
+		int numeroAleatorio = 0;
 
 		do {
 			System.out.print(ii);
@@ -185,36 +184,44 @@ public class Rip {
 
 				// Construimos datos
 				try {
+					//Bucle para cada destino (Split horizon)
 					while (itVecinos.hasNext()) {
+						String dirDestino = itVecinos.next();
 						// Creamos mensaje con datos de la tabla
-						ByteBuffer bufferSalida = ByteBuffer.allocate(504);
+						int tamanho = Ruta.averiguarTamanho(tabla, vecinos.get(dirDestino).getDireccion());//Calculamos tamanho de envio
+						if(tamanho > 504){
+							tamanho =504;
+						}
+						byte[] mensajeEnvioBits = new byte[tamanho];
+
+						ByteBuffer bufferSalida = ByteBuffer.allocate(tamanho);
 						// Construimos cabecera
 						bufferSalida.put(Ruta.construirCabecera());
-						String dirDestino = itVecinos.next();
+						// 
 						bufferSalida.put(Ruta.construirPaquete(tabla, vecinos.get(dirDestino).getDireccion()));
 						// Introducimos en byte[]
 						bufferSalida.rewind();
-						bufferSalida.get(mensajeBits, 0, 504);
-						/*
-						 * // HERRAMIENTA ver bytes
-						 * int i = 0;
-						 * for (; i < 4; i += 2) {
-						 * System.out.print(mensajeBits[i] + " ");
-						 * System.out.print(mensajeBits[i + 1] + "   ");
-						 * }
-						 * System.out.println();
-						 * for (int j = 1; j < 4; j++) {
-						 * for (; i < (j * 20) + 4; i += 2) {
-						 * System.out.print(mensajeBits[i] + "  ");
-						 * System.out.print(mensajeBits[i + 1] + "\t");
-						 * }
-						 * System.out.println();
-						 * }
-						 */
+						bufferSalida.get(mensajeEnvioBits, 0, tamanho);
+						
+						  // HERRAMIENTA ver bytes
+						  /*int i3 = 0;
+						  for (; i3 < 4; i3 += 2) {
+							  System.out.print(mensajeEnvioBits[i3] + " ");
+							  System.out.print(mensajeEnvioBits[i3 + 1] + "   ");
+						  }
+						  System.out.println();
+						  for (int j = 1; j < 4; j++) {
+							  for (; i3 < (j * 20) + 4; i3 += 2) {
+								  System.out.print(mensajeEnvioBits[i3] + "  ");
+								  System.out.print(mensajeEnvioBits[i3 + 1] + "\t");
+						  }
+						  System.out.println();
+						  }*/
+						 
 						aux = vecinos.get(dirDestino);
 						if (aux.getDireccion().compareTo(local.getDireccion()) != 0) {
 							System.out.println("Envio a " + aux.getDireccion() + ":" + aux.getPuerto());
-							DatagramPacket datagrama = new DatagramPacket(mensajeBits, mensajeBits.length, aux.getInet(), aux.getPuerto()); // Direccion destino y puerto destino
+							DatagramPacket datagrama = new DatagramPacket(mensajeEnvioBits, mensajeEnvioBits.length, aux.getInet(), aux.getPuerto()); // Direccion destino y puerto destino
 							socket.send(datagrama);
 						}
 					}

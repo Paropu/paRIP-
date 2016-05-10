@@ -19,7 +19,11 @@ public class Ruta {
 	public String toString() {
 		GregorianCalendar tiempoInicial = new GregorianCalendar();
 		long milisegInicial = tiempoInicial.getTimeInMillis();
-		return this.getDireccionIP() + "\t" + this.getMascara() + "\t" + this.nextHop + "\t" + this.coste + "\t" + (milisegInicial-this.timer);
+		if(this.getMascara().length()>14){
+			return this.getDireccionIP() + "\t" + this.getMascara() + "\t" + this.nextHop + "\t" + this.coste + "\t" + (milisegInicial-this.timer);
+		} else {
+			return this.getDireccionIP() + "\t" + this.getMascara() + "\t\t" + this.nextHop + "\t" + this.coste + "\t" + (milisegInicial-this.timer);
+		}
 	}
 
 	public Vecino getVecino() {
@@ -122,6 +126,7 @@ public class Ruta {
 
 		while (itTabla.hasNext()) {
 			String key = itTabla.next();
+			//Split Horizon
 			if (tabla.get(key).getNextHop().compareTo(dirDestino) != 0) {
 				datos.putShort((short) 2).putShort((short) 0);
 				// Meter IP
@@ -139,10 +144,30 @@ public class Ruta {
 
 				// Meter Coste
 				datos.putInt(tabla.get(key).getCoste());
+				i++;
 			}
 		}
 		datos.rewind();
-		return datos;
+		byte [] aux = new byte[i*20];
+		datos.get(aux);
+		ByteBuffer datosSalida = ByteBuffer.allocate(i*20);
+		datosSalida.put(aux);
+		datosSalida.rewind();
+		return datosSalida;
+	}
+	
+	public static int averiguarTamanho(TreeMap<String, Ruta> tabla, String dirDestino){
+		Set<String> setTabla = tabla.keySet();
+		Iterator<String> itTabla = setTabla.iterator();
+		int i = 0;
+
+		while (itTabla.hasNext()) {
+			String key = itTabla.next();
+			if (tabla.get(key).getNextHop().compareTo(dirDestino) != 0) {
+				i++;
+			}
+		}
+		return (i*20)+4;
 	}
 
 	/*
