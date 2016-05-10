@@ -16,10 +16,11 @@ public class Ruta {
 	private Integer len;
 	private String nextHop;
 	private Integer coste;
-	private long timer;		//tiempo transcurrido desde la llegada del paquete
+	private long timer; // tiempo transcurrido desde la llegada del paquete
 
+	@Override
 	public String toString() {
-		if(this.getMascara().length()>14){
+		if (this.getMascara().length() > 14) {
 			return this.getDireccionIP() + "\t" + this.getMascara() + "\t" + this.nextHop + "\t\t" + this.coste;
 		} else {
 			return this.getDireccionIP() + "\t" + this.getMascara() + "\t\t" + this.nextHop + "\t\t" + this.coste;
@@ -49,15 +50,15 @@ public class Ruta {
 	public Integer getCoste() {
 		return this.coste;
 	}
-	
-	public void setCoste(Integer coste){
+
+	public void setCoste(Integer coste) {
 		this.coste = coste;
 	}
-	
-	public long getTimer(){
+
+	public long getTimer() {
 		return this.timer;
 	}
-	
+
 	/**
 	 * Devuelve true si la Ruta introducida cumple lo necesario para ser añadida o actualizada en la tabla
 	 * @param tabla TreeMap con todos los datos de la tabla
@@ -75,10 +76,10 @@ public class Ruta {
 
 			if (rutaTabla.getDireccionIP().compareTo(rutaNueva.getDireccionIP()) == 0) {
 				existeEnTabla = true;
-				if (rutaTabla.getCoste() == rutaNueva.getCoste()){
+				if (rutaTabla.getCoste() == rutaNueva.getCoste()) {
 					return false;
 				}
-				
+
 				// Comprobar si en la tabla tenemos esa direccion con mayor coste
 				if (rutaTabla.getCoste() > rutaNueva.getCoste()) {
 					return true;
@@ -96,7 +97,7 @@ public class Ruta {
 		// Si no se cumplen
 		return false;
 	}
-	
+
 	/**
 	 * Actualiza el atributo timer de las entradas de la tabla que acaban de llegar de nuevo
 	 * @param tabla
@@ -106,13 +107,13 @@ public class Ruta {
 	public Boolean actualizarTimer(TreeMap<String, Ruta> tabla, Ruta rutaNueva) {
 		Set<String> setTabla = tabla.keySet();
 		Iterator<String> it = setTabla.iterator();
-		Ruta rutaTabla = null;		
+		Ruta rutaTabla = null;
 		while (it.hasNext()) {
 			rutaTabla = tabla.get(it.next());
 
 			if (rutaTabla.getDireccionIP().compareTo(rutaNueva.getDireccionIP()) == 0) {
-				if (rutaTabla.getCoste() == rutaNueva.getCoste()){
-					if(rutaTabla.getNextHop().compareTo(rutaNueva.getNextHop()) == 0 && rutaTabla.getTimer() < rutaNueva.getTimer()){
+				if (rutaTabla.getCoste() == rutaNueva.getCoste()) {
+					if (rutaTabla.getNextHop().compareTo(rutaNueva.getNextHop()) == 0 && rutaTabla.getTimer() < rutaNueva.getTimer()) {
 						return true;
 					} else {
 						return false;
@@ -135,7 +136,7 @@ public class Ruta {
 	}
 
 	/**
-	 * Devuelve los campos de datos para enviar con el formato y tamaño correctos 
+	 * Devuelve los campos de datos para enviar con el formato y tamaño correctos
 	 * @param tabla
 	 * @param dirDestino
 	 * @return
@@ -148,7 +149,7 @@ public class Ruta {
 
 		while (itTabla.hasNext()) {
 			String key = itTabla.next();
-			//Split Horizon
+			// Split Horizon
 			if (tabla.get(key).getNextHop().compareTo(dirDestino) != 0) {
 				datos.putShort((short) 2).putShort((short) 0);
 				// Meter IP
@@ -170,21 +171,21 @@ public class Ruta {
 			}
 		}
 		datos.rewind();
-		byte [] aux = new byte[i*20];
+		byte[] aux = new byte[i * 20];
 		datos.get(aux);
-		ByteBuffer datosSalida = ByteBuffer.allocate(i*20);
+		ByteBuffer datosSalida = ByteBuffer.allocate(i * 20);
 		datosSalida.put(aux);
 		datosSalida.rewind();
 		return datosSalida;
 	}
-	
+
 	/**
 	 * Calcula el tamaño que debe de tener el paquete
 	 * @param tabla
 	 * @param dirDestino
 	 * @return
 	 */
-	public static int averiguarTamanho(TreeMap<String, Ruta> tabla, String dirDestino){
+	public static int averiguarTamanho(TreeMap<String, Ruta> tabla, String dirDestino) {
 		Set<String> setTabla = tabla.keySet();
 		Iterator<String> itTabla = setTabla.iterator();
 		int i = 0;
@@ -195,7 +196,7 @@ public class Ruta {
 				i++;
 			}
 		}
-		return (i*20)+4;
+		return (i * 20) + 4;
 	}
 
 	/*
@@ -213,7 +214,7 @@ public class Ruta {
 		this.mascara = "/255.255.255.255";
 		this.len = 32;
 		this.nextHop = vecino.getDireccion();
-		this.timer=0;
+		this.timer = 0;
 		if (tipo.contains("local")) {
 			this.coste = 0;
 		} else {
@@ -247,7 +248,7 @@ public class Ruta {
 	 * @param puertoMensajero puerto del vecino que lo ha enviado
 	 * @param timer
 	 */
-	public Ruta(byte[] mensajeBits, int i, InetAddress direccionMensajero, int puertoMensajero,long timer) {
+	public Ruta(byte[] mensajeBits, int i, InetAddress direccionMensajero, int puertoMensajero, long timer) {
 		this.direccionIP = new String("/" + Byte.toUnsignedInt(mensajeBits[4 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[5 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[6 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[7 + (i * 20)]));
 		this.mascara = new String("/" + Byte.toUnsignedInt(mensajeBits[8 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[9 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[10 + (i * 20)]) + "." + Byte.toUnsignedInt(mensajeBits[11 + (i * 20)]));
 		this.coste = 1 + (mensajeBits[19 + (i * 20)]);

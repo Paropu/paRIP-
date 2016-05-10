@@ -30,7 +30,7 @@ public class Subred {
 	public String len2int() {
 		int unos = Integer.parseInt(this.len);
 		String mascara = "/";
-		if(unos>32) {
+		if (unos > 32) {
 			System.out.println("ERROR en formato de mascara");
 			System.exit(0);
 		}

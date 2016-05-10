@@ -69,13 +69,13 @@ public class Vecino {
 		}
 		return addr;
 	}
-	
+
 	/**
 	 * Contructor de objeto Vecino para los datos del propio ordenador
 	 * @param args
 	 * @param interfaz
 	 */
-	public Vecino(String[] args,String interfaz) { 
+	public Vecino(String[] args, String interfaz) {
 		if (args.length == 0) { // Si no tiene datos de entrada
 			this.direccionIP = this.getDireccionETH0(interfaz); // Obtiene y asigna la direccion IP del puerto dado
 			this.puerto = 5512;
@@ -93,7 +93,7 @@ public class Vecino {
 			}
 		}
 	}
-	
+
 	/**
 	 * Constructor para vecinos del archivo
 	 * @param vecino
@@ -107,7 +107,7 @@ public class Vecino {
 			this.puerto = 5512;
 		}
 	}
-	
+
 	/**
 	 * Constructor para vecinos recibidos que no están originalmente en el archivo
 	 * @param ruta
