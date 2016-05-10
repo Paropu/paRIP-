@@ -73,7 +73,7 @@ public class Rip {
 		boolean interrumpido = false;	//true si entró un datagrama durante el tiempo de espera
 		int difMiliseg = 0;			//In. tiempo entre crear DatagramPacket y recibir
 		int numeroAleatorio = 0;	//In. tiempo de espera
-
+		
 		//Inicio de bucle infinito
 		do {
 			cambios.clear(); //Borramos TreeMap de Triggered Updates		
@@ -98,7 +98,7 @@ public class Rip {
 							continue;
 						}
 						//Si llevamos mas de tiempoSubirCoste sin recibir esta entrada, subimos coste a 16
-						if((tabla.get(key).getTimer() != 0 && (horaActual.getTime().getTime()-tabla.get(key).getTimer()) > tiempoSubirCoste && tabla.get(key).getNextHop().compareTo(local.getDireccion()) !=0)){
+						if((tabla.get(key).getTimer() != 0 && (horaActual.getTime().getTime()-tabla.get(key).getTimer()) > tiempoSubirCoste && tabla.get(key).getNextHop().compareTo(local.getDireccion()) !=0) && tabla.get(key).getCoste()<16	){
 							tabla.get(key).setCoste(16);
 							cambios.put(tabla.get(key).getDireccionIP(), tabla.get(key));
 							cambiosEnTabla = true; //Triggered updates
@@ -115,10 +115,14 @@ public class Rip {
 			it = setTabla.iterator();
 			String key2 = null;
 			System.out.println("\n\nDireccion IP" + "\t" + "Mascara" + "\t\t\t" + "Siguiente salto" + "\t\t" + "Coste");
-			while (it.hasNext()) {
-				key2 = it.next();
-				if(tabla.get(key2).getDireccionIP().compareTo(local.getDireccion())!=0)
-					System.out.println(tabla.get(key2));
+			if(setTabla.size() > 1){
+				while (it.hasNext()) {
+					key2 = it.next();
+					if(tabla.get(key2).getDireccionIP().compareTo(local.getDireccion())!=0)
+						System.out.println(tabla.get(key2));
+				}
+			} else {
+				System.out.println("No hay ninguna entrada en la tabla");
 			}
 			
 			// Escuchamos datagramas entrantes
@@ -128,11 +132,11 @@ public class Rip {
 				long milisegInicial = tiempoInicial.getTimeInMillis();	//Guardamos tiempo empezar escucha
 				if (interrumpido && (difMiliseg < numeroAleatorio)) {
 					numeroAleatorio -= difMiliseg;
-					//System.out.println("tiempo restante: " + numeroAleatorio);	
+					//System.out.println("tiempo restante: " + numeroAleatorio);	//HERRAMIENTA ver tiempo
 					socket.setSoTimeout(numeroAleatorio);	//Seguimos contando por cuando llego el mensaje
 				} else {
 					numeroAleatorio = (int) (Math.random()*((tiempoMedioEnvio+varianzaEnvio)-(tiempoMedioEnvio-varianzaEnvio)+1)+(tiempoMedioEnvio-varianzaEnvio));	//(Max-min+1)+min
-					//System.out.println("tiempo reiniciado: " + numeroAleatorio);
+					//System.out.println("tiempo reiniciado: " + numeroAleatorio);  //HERRAMIENTA ver tiempo
 					socket.setSoTimeout(numeroAleatorio);
 				}
 				interrumpido = false;
@@ -152,7 +156,7 @@ public class Rip {
 				byte[] mensajeSinCabecera = new byte[500];
 				bufferSinCabecera.get(mensajeSinCabecera);
 
-				int i = 0;
+				int i = 0;	//contador de registros
 				while (mensajeSinCabecera[1 + (i * 20)] == 2 || i == 24) {
 					// Crear objeto ruta
 					GregorianCalendar horaRecibido = new GregorianCalendar();
@@ -193,7 +197,7 @@ public class Rip {
 							 tamanho = Ruta.averiguarTamanho(tabla, vecinos.get(dirDestino).getDireccion());//Calculamos tamanho de envio
 						}
 						if(tamanho > 504){	//Limite de enviar 25 entradas en la tabla
-							tamanho =504;	
+							tamanho = 504;	
 						}
 						byte[] mensajeEnvioBits = new byte[tamanho];
 
@@ -212,7 +216,7 @@ public class Rip {
 						aux = vecinos.get(dirDestino);
 						//Enviamos a vecinos
 						if (aux.getDireccion().compareTo(local.getDireccion()) != 0) {
-							//System.out.println("Envio a " + aux.getDireccion() + ":" + aux.getPuerto());
+							//System.out.println("Envio a " + aux.getDireccion() + ":" + aux.getPuerto());	//HERRAMIENTA: Ver envios
 							DatagramPacket datagrama = new DatagramPacket(mensajeEnvioBits, mensajeEnvioBits.length, aux.getInet(), aux.getPuerto()); // Direccion destino y puerto destino
 							socket.send(datagrama);
 						}
