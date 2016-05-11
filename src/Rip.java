@@ -24,6 +24,10 @@ public class Rip {
 		 * La interfaz por defecto es eth0
 		 * Envio en media cada 10 segundos, con un maximo de 12 segundos y un minimo de 8
 		 * Asigno coste infinito al cabo de 30 segundos y borro de la tabla tras 60 segundos
+		 * El codigo tiene que ser compilado con java 8
+		 * 		/usr/lib/jvm/java-8-oracle/bin/javac Rip.java
+		 * El fichero tiene que estar en la misama carpeta que Rip.class
+		 * 
 		 */
 
 		int tiempoSubirCoste = 30 * 1000; 		// tiempo para coste infinito a una entrada de la tabla
